@@ -36,5 +36,7 @@
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
     }
-  }
+  },
+  "Codegeex.CommitMessage.LanguagePreference": "English",
+  "Codegeex.CommitMessageStyle": "ConventionalCommits"
 }
