@@ -262,31 +262,19 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'details',
-      type: 'group',
+      type: 'richText',
       label: 'Product Details',
-      fields: [
-        {
-          name: 'content',
-          type: 'richText',
-          admin: {
-            description: 'Additional product details and information',
-          },
-        },
-      ],
+      admin: {
+        description: 'Additional product details and information',
+      },
     },
     {
       name: 'specification',
-      type: 'group',
+      type: 'richText',
       label: 'Specification',
-      fields: [
-        {
-          name: 'content',
-          type: 'richText',
-          admin: {
-            description: 'Product specifications and technical details',
-          },
-        },
-      ],
+      admin: {
+        description: 'Product specifications and technical details',
+      },
     },
     {
       name: 'downloads',

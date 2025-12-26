@@ -290,46 +290,42 @@ export interface Product {
    * Auto-populated: All categories (main + subcategories)
    */
   categories?: (number | Category)[] | null;
+  /**
+   * Additional product details and information
+   */
   details?: {
-    /**
-     * Additional product details and information
-     */
-    content?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
+    root: {
+      type: string;
+      children: {
+        type: any;
         version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Product specifications and technical details
+   */
   specification?: {
-    /**
-     * Product specifications and technical details
-     */
-    content?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
+    root: {
+      type: string;
+      children: {
+        type: any;
         version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * Upload PDF files, datasheets, manuals, etc.
    */
@@ -526,16 +522,8 @@ export interface ProductsSelect<T extends boolean = true> {
         sizes?: T;
       };
   categories?: T;
-  details?:
-    | T
-    | {
-        content?: T;
-      };
-  specification?:
-    | T
-    | {
-        content?: T;
-      };
+  details?: T;
+  specification?: T;
   downloads?:
     | T
     | {
