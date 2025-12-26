@@ -66,6 +66,9 @@ export const Products: CollectionConfig = {
           label: 'Resolutions',
           admin: {
             description: 'Select resolution categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -85,6 +88,9 @@ export const Products: CollectionConfig = {
           label: 'Series',
           admin: {
             description: 'Select series categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -104,6 +110,9 @@ export const Products: CollectionConfig = {
           label: 'Accessories Types',
           admin: {
             description: 'Select accessories type categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -123,6 +132,9 @@ export const Products: CollectionConfig = {
           label: 'Channels',
           admin: {
             description: 'Select channel categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -142,6 +154,9 @@ export const Products: CollectionConfig = {
           label: 'Ports',
           admin: {
             description: 'Select port categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -161,6 +176,9 @@ export const Products: CollectionConfig = {
           label: 'Server Series',
           admin: {
             description: 'Select server series categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -180,6 +198,9 @@ export const Products: CollectionConfig = {
           label: 'Capacities',
           admin: {
             description: 'Select capacity categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -199,6 +220,9 @@ export const Products: CollectionConfig = {
           label: 'Voltages',
           admin: {
             description: 'Select voltage categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -218,6 +242,9 @@ export const Products: CollectionConfig = {
           label: 'Input Types',
           admin: {
             description: 'Select input type categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
@@ -237,6 +264,9 @@ export const Products: CollectionConfig = {
           label: 'Sizes',
           admin: {
             description: 'Select size categories',
+            components: {
+              Field: '/payload/components/ConditionalCategoryField',
+            },
           },
           filterOptions: ({ data }) => {
             if (data.mainCategory) {
