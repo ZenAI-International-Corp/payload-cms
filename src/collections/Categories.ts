@@ -4,7 +4,7 @@ export const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'parent', 'type', 'createdAt'],
+    defaultColumns: ['name', 'image', 'parent', 'type', 'createdAt'],
   },
   fields: [
     {
@@ -38,6 +38,13 @@ export const Categories: CollectionConfig = {
         { label: 'Resolution', value: 'resolution' },
         { label: 'Series', value: 'series' },
         { label: 'Accessories Type', value: 'accessories-type' },
+        { label: 'Channels', value: 'channels' },
+        { label: 'Port', value: 'port' },
+        { label: 'Server Series', value: 'server-series' },
+        { label: 'Capacity', value: 'capacity' },
+        { label: 'Voltage', value: 'voltage' },
+        { label: 'Input Type', value: 'input-type' },
+        { label: 'Size', value: 'size' },
       ],
       admin: {
         description: 'Type of category for filtering purposes',
@@ -48,6 +55,14 @@ export const Categories: CollectionConfig = {
       type: 'textarea',
       admin: {
         description: 'Optional description for this category',
+      },
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Category header image (especially for Product Category type)',
       },
     },
   ],

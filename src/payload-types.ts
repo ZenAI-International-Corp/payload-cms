@@ -179,11 +179,29 @@ export interface Category {
   /**
    * Type of category for filtering purposes
    */
-  type?: ('product-category' | 'resolution' | 'series' | 'accessories-type') | null;
+  type?:
+    | (
+        | 'product-category'
+        | 'resolution'
+        | 'series'
+        | 'accessories-type'
+        | 'channels'
+        | 'port'
+        | 'server-series'
+        | 'capacity'
+        | 'voltage'
+        | 'input-type'
+        | 'size'
+      )
+    | null;
   /**
    * Optional description for this category
    */
   description?: string | null;
+  /**
+   * Category header image (especially for Product Category type)
+   */
+  image?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -431,6 +449,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   parent?: T;
   type?: T;
   description?: T;
+  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }
