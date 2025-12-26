@@ -238,9 +238,13 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Select one or more categories for this product
+   * Select the main product category (e.g., IP Cameras, NVR, etc.)
    */
-  categories: (number | Category)[];
+  mainCategory: number | Category;
+  /**
+   * Select subcategories based on the main category selected above
+   */
+  categories?: (number | Category)[] | null;
   details?: {
     /**
      * Additional product details and information
@@ -461,6 +465,7 @@ export interface ProductsSelect<T extends boolean = true> {
   model?: T;
   slug?: T;
   description?: T;
+  mainCategory?: T;
   categories?: T;
   details?:
     | T

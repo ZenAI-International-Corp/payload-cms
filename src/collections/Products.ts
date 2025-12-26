@@ -34,13 +34,39 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'mainCategory',
+      type: 'relationship',
+      relationTo: 'categories',
+      required: true,
+      admin: {
+        description: 'Select the main product category (e.g., IP Cameras, NVR, etc.)',
+      },
+      filterOptions: ({ data }) => {
+        // Only show categories with type 'product-category' and no parent (main categories)
+        return {
+          type: { equals: 'product-category' },
+          parent: { exists: false },
+        }
+      },
+    },
+    {
       name: 'categories',
       type: 'relationship',
       relationTo: 'categories',
       hasMany: true,
       required: true,
       admin: {
-        description: 'Select one or more categories for this product',
+        description: 'Select subcategories based on the main category selected above',
+        condition: (data) => Boolean(data.mainCategory),
+      },
+      filterOptions: ({ data }) => {
+        // Show subcategories of the selected main category
+        if (data.mainCategory) {
+          return {
+            parent: { equals: data.mainCategory },
+          }
+        }
+        return false
       },
     },
     {
