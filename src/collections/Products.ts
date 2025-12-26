@@ -4,7 +4,7 @@ export const Products: CollectionConfig = {
   slug: 'products',
   admin: {
     useAsTitle: 'model',
-    defaultColumns: ['model', 'categories', 'status', 'createdAt'],
+    defaultColumns: ['model', 'mainCategory', 'status', 'createdAt'],
   },
   fields: [
     {
@@ -50,23 +50,214 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'subcategories',
+      type: 'group',
+      label: 'Subcategories',
+      admin: {
+        description: 'Select subcategories by type. Only available types for the selected main category will be shown.',
+        condition: (data) => Boolean(data.mainCategory),
+      },
+      fields: [
+        {
+          name: 'resolutions',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Resolutions',
+          admin: {
+            description: 'Select resolution categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'resolution' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'series',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Series',
+          admin: {
+            description: 'Select series categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'series' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'accessoriesTypes',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Accessories Types',
+          admin: {
+            description: 'Select accessories type categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'accessories-type' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'channels',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Channels',
+          admin: {
+            description: 'Select channel categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'channels' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'ports',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Ports',
+          admin: {
+            description: 'Select port categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'port' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'serverSeries',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Server Series',
+          admin: {
+            description: 'Select server series categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'server-series' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'capacities',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Capacities',
+          admin: {
+            description: 'Select capacity categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'capacity' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'voltages',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Voltages',
+          admin: {
+            description: 'Select voltage categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'voltage' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'inputTypes',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Input Types',
+          admin: {
+            description: 'Select input type categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'input-type' },
+              }
+            }
+            return false
+          },
+        },
+        {
+          name: 'sizes',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+          label: 'Sizes',
+          admin: {
+            description: 'Select size categories',
+          },
+          filterOptions: ({ data }) => {
+            if (data.mainCategory) {
+              return {
+                parent: { equals: data.mainCategory },
+                type: { equals: 'size' },
+              }
+            }
+            return false
+          },
+        },
+      ],
+    },
+    {
       name: 'categories',
       type: 'relationship',
       relationTo: 'categories',
       hasMany: true,
-      required: true,
       admin: {
-        description: 'Select subcategories based on the main category selected above',
-        condition: (data) => Boolean(data.mainCategory),
-      },
-      filterOptions: ({ data }) => {
-        // Show subcategories of the selected main category
-        if (data.mainCategory) {
-          return {
-            parent: { equals: data.mainCategory },
-          }
-        }
-        return false
+        hidden: true, // Hidden field, automatically populated by hook
+        description: 'Auto-populated: All categories (main + subcategories)',
       },
     },
     {
@@ -183,6 +374,85 @@ export const Products: CollectionConfig = {
             .replace(/(^-|-$)/g, '')
         }
         return data
+      },
+    ],
+    beforeChange: [
+      ({ data, operation, req }) => {
+        // Merge all subcategories into a single categories array for easier querying
+        if (data?.subcategories) {
+          const allCategories: (string | number)[] = []
+          
+          // Add main category
+          if (data.mainCategory) {
+            allCategories.push(data.mainCategory)
+          }
+          
+          // Add all subcategories from different types
+          const subcategoryFields = [
+            'resolutions',
+            'series',
+            'accessoriesTypes',
+            'channels',
+            'ports',
+            'serverSeries',
+            'capacities',
+            'voltages',
+            'inputTypes',
+            'sizes',
+          ]
+          
+          for (const field of subcategoryFields) {
+            if (data.subcategories[field]) {
+              const values = Array.isArray(data.subcategories[field])
+                ? data.subcategories[field]
+                : [data.subcategories[field]]
+              allCategories.push(...values)
+            }
+          }
+          
+          // Store merged categories for querying
+          data.categories = allCategories.filter((cat, index) => allCategories.indexOf(cat) === index) // Remove duplicates
+        }
+        
+        return data
+      },
+    ],
+    afterRead: [
+      ({ doc }) => {
+        // Ensure categories field is populated from subcategories if needed
+        if (doc.subcategories && (!doc.categories || doc.categories.length === 0)) {
+          const allCategories: (string | number)[] = []
+          
+          if (doc.mainCategory) {
+            allCategories.push(doc.mainCategory)
+          }
+          
+          const subcategoryFields = [
+            'resolutions',
+            'series',
+            'accessoriesTypes',
+            'channels',
+            'ports',
+            'serverSeries',
+            'capacities',
+            'voltages',
+            'inputTypes',
+            'sizes',
+          ]
+          
+          for (const field of subcategoryFields) {
+            if (doc.subcategories?.[field]) {
+              const values = Array.isArray(doc.subcategories[field])
+                ? doc.subcategories[field]
+                : [doc.subcategories[field]]
+              allCategories.push(...values)
+            }
+          }
+          
+          doc.categories = allCategories.filter((cat, index) => allCategories.indexOf(cat) === index)
+        }
+        
+        return doc
       },
     ],
   },

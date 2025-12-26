@@ -242,7 +242,52 @@ export interface Product {
    */
   mainCategory: number | Category;
   /**
-   * Select subcategories based on the main category selected above
+   * Select subcategories by type. Only available types for the selected main category will be shown.
+   */
+  subcategories?: {
+    /**
+     * Select resolution categories
+     */
+    resolutions?: (number | Category)[] | null;
+    /**
+     * Select series categories
+     */
+    series?: (number | Category)[] | null;
+    /**
+     * Select accessories type categories
+     */
+    accessoriesTypes?: (number | Category)[] | null;
+    /**
+     * Select channel categories
+     */
+    channels?: (number | Category)[] | null;
+    /**
+     * Select port categories
+     */
+    ports?: (number | Category)[] | null;
+    /**
+     * Select server series categories
+     */
+    serverSeries?: (number | Category)[] | null;
+    /**
+     * Select capacity categories
+     */
+    capacities?: (number | Category)[] | null;
+    /**
+     * Select voltage categories
+     */
+    voltages?: (number | Category)[] | null;
+    /**
+     * Select input type categories
+     */
+    inputTypes?: (number | Category)[] | null;
+    /**
+     * Select size categories
+     */
+    sizes?: (number | Category)[] | null;
+  };
+  /**
+   * Auto-populated: All categories (main + subcategories)
    */
   categories?: (number | Category)[] | null;
   details?: {
@@ -466,6 +511,20 @@ export interface ProductsSelect<T extends boolean = true> {
   slug?: T;
   description?: T;
   mainCategory?: T;
+  subcategories?:
+    | T
+    | {
+        resolutions?: T;
+        series?: T;
+        accessoriesTypes?: T;
+        channels?: T;
+        ports?: T;
+        serverSeries?: T;
+        capacities?: T;
+        voltages?: T;
+        inputTypes?: T;
+        sizes?: T;
+      };
   categories?: T;
   details?:
     | T
