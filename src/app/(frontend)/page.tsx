@@ -183,7 +183,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="products-grid">
-            {featuredProducts.map((product: Product, index: number) => {
+            {featuredProducts.map((product: Product) => {
               // 获取产品的第一张图片作为特色图片
               const firstImage = product.gallery && product.gallery.length > 0 
                 ? product.gallery[0].image 
@@ -245,9 +245,9 @@ export default async function HomePage() {
               <div className="about-label">About IDView</div>
               <h2 className="about-title">Our Mission & Values</h2>
               <div className="about-quote">
-                "To market and to promote the affordable Digital ID View brand video
+                &ldquo;To market and to promote the affordable Digital ID View brand video
                 security equipment with passion and professionalism for lasting
-                results."
+                results.&rdquo;
               </div>
               <p className="about-description">
                 IDView establishes itself as a trusted partner in the global security industry, delivering
