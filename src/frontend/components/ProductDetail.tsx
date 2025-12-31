@@ -7,7 +7,7 @@ import type { Product, Category } from '@/payload-types'
 import { PayloadLexicalReact } from '@zapal/payload-lexical-react'
 import './ProductDetail.css'
 
-type TabType = 'details' | 'specification' | 'downloads'
+type TabType = 'specification' | 'downloads'
 
 export function ProductDetail() {
   const params = useParams()
@@ -16,7 +16,7 @@ export function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null)
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<TabType>('details')
+  const [activeTab, setActiveTab] = useState<TabType>('specification')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   useEffect(() => {
@@ -280,17 +280,26 @@ export function ProductDetail() {
                 )}
               </div>
             </div>
+
+            {/* Details Section - Moved here from tabbar */}
+            <div className="product-detail-details-section">
+              <h3>Details</h3>
+              <div className="product-detail-details-content">
+                {(() => {
+                  const renderedContent = product.details ? renderRichText(product.details) : null
+                  return renderedContent ? (
+                    renderedContent
+                  ) : (
+                    <p className="product-detail-empty">No details available.</p>
+                  )
+                })()}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Tab Bar */}
         <div className="product-detail-tabs">
-          <button
-            className={`product-detail-tab ${activeTab === 'details' ? 'active' : ''}`}
-            onClick={() => setActiveTab('details')}
-          >
-            Details
-          </button>
           <button
             className={`product-detail-tab ${activeTab === 'specification' ? 'active' : ''}`}
             onClick={() => setActiveTab('specification')}
@@ -307,19 +316,6 @@ export function ProductDetail() {
 
         {/* Tab Content */}
         <div className="product-detail-content">
-          {activeTab === 'details' && (
-            <div className="product-detail-tab-content">
-              {(() => {
-                const renderedContent = product.details ? renderRichText(product.details) : null
-                return renderedContent ? (
-                  renderedContent
-                ) : (
-                  <p className="product-detail-empty">No details available.</p>
-                )
-              })()}
-            </div>
-          )}
-
           {activeTab === 'specification' && (
             <div className="product-detail-tab-content">
               {(() => {

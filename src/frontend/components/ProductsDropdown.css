@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   max-height: calc(100vh - 70px);
-  background: linear-gradient(to right, rgb(245, 245, 245) 0%, rgb(245, 245, 245) 300px, rgb(255, 255, 255) 300px, rgb(255, 255, 255) 100%);
+  background: linear-gradient(to right, rgb(245, 245, 245) 0%, rgb(245, 245, 245) 50%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 100%);
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   z-index: 999;
@@ -113,6 +113,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: rgb(255, 255, 255);
 }
 
 .subcategories-panel {
@@ -244,7 +245,7 @@
   .products-dropdown {
     top: 60px;
     max-height: calc(100vh - 60px);
-    background: linear-gradient(to right, rgb(245, 245, 245) 0%, rgb(245, 245, 245) 250px, rgb(255, 255, 255) 250px, rgb(255, 255, 255) 100%);
+    background: linear-gradient(to right, rgb(245, 245, 245) 0%, rgb(245, 245, 245) 50%, rgb(255, 255, 255) 50%, rgb(255, 255, 255) 100%);
   }
 
   .dropdown-container {
