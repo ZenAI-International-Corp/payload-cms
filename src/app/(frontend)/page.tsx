@@ -1,7 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
 import {
-  ArrowRight,
   Mail,
   FileText,
   Download,
@@ -14,76 +13,10 @@ import {
   Facebook,
   Send,
 } from 'lucide-react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import type { Product, Media, Category } from '@/payload-types'
+import { CategoryGrid, FeaturedProducts } from '@/frontend/components'
 import './home.css'
 
-// 分类显示配置 - 将数据库分类映射到首页展示
-// image 和 description 作为后备值，优先使用数据库中存储的值
-const categoryDisplayConfig: Record<string, {
-  displayName: string
-  description: string
-  image: string // 后备图片，当数据库中没有图片时使用
-}> = {
-  'IP Cameras': {
-    displayName: 'IP Cameras',
-    description: 'High-resolution network cameras delivering crisp, clear video surveillance over IP networks.',
-    image: 'https://placehold.co/467x400',
-  },
-  'NVR': {
-    displayName: 'NVR Systems',
-    description: 'Robust Network Video Recorders designed for seamless management and storage of IP camera footage.',
-    image: 'https://placehold.co/468x401',
-  },
-  'Analog Camera': {
-    displayName: 'Analog Cameras',
-    description: 'Cost-effective analog security cameras providing reliable performance for traditional coaxial systems.',
-    image: 'https://placehold.co/467x234',
-  },
-  'DVR': {
-    displayName: 'DVR',
-    description: 'Digital Video Recorders offering dependable recording solutions for analog surveillance setups.',
-    image: 'https://placehold.co/471x404',
-  },
-  'IP PVM': {
-    displayName: 'IP PVM & Displays',
-    description: 'Public View Monitors and professional displays designed for deterrence and high-quality viewing.',
-    image: 'https://placehold.co/467x234',
-  },
-  'Others': {
-    displayName: 'Others',
-    description: 'Essential accessories including PoE Switches, UPS power supplies, and mounting brackets.',
-    image: 'https://placehold.co/470x403',
-  },
-}
-
-export default async function HomePage() {
-  const payload = await getPayload({ config })
-  
-  // 获取主分类（用于 Core Product Categories）
-  const { docs: mainCategories } = await payload.find({
-    collection: 'categories',
-    where: {
-      type: { equals: 'product-category' },
-      parent: { exists: false },
-    },
-    limit: 100,
-    depth: 1, // 包含关联数据（如图片）
-  })
-
-  // 过滤出要在首页显示的分类，并按配置顺序排列
-  const displayCategories = Object.keys(categoryDisplayConfig)
-    .map(name => mainCategories.find(cat => cat.name === name))
-    .filter((cat): cat is Category => cat !== undefined)
-  
-  // 获取 4 个产品用于 Featured Products 展示
-  const { docs: featuredProducts } = await payload.find({
-    collection: 'products',
-    limit: 4,
-    depth: 1, // 包含关联数据（如图片）
-    sort: '-createdAt', // 按创建时间倒序，展示最新产品
-  })
+export default function HomePage() {
   return (
     <div className="home-page">
       {/* Hero Section */}
@@ -116,126 +49,10 @@ export default async function HomePage() {
       </section>
 
       {/* Core Product Categories */}
-      <section className="categories-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Core Product Categories</h2>
-            <div className="section-underline"></div>
-            <p className="section-description">
-              Comprehensive security hardware for every surveillance need.
-            </p>
-          </div>
-          <div className="categories-grid">
-            {displayCategories.map((category) => {
-              const config = categoryDisplayConfig[category.name]
-              if (!config) return null
-              
-              // 获取分类图片：优先使用数据库图片，否则使用配置的默认图片
-              const categoryImage = category.image && typeof category.image === 'object'
-                ? (category.image as Media).url
-                : null
-              const imageUrl = categoryImage || config.image
-              
-              // 使用数据库描述或配置的描述
-              const description = category.description || config.description
-              
-              return (
-                <Link 
-                  key={category.id} 
-                  href={`/products?category=${category.id}`}
-                  className="category-card"
-                >
-                  <div className="category-image-wrapper">
-                    <img 
-                      src={imageUrl} 
-                      alt={config.displayName} 
-                      className="category-image" 
-                    />
-                  </div>
-                  <div className="category-content">
-                    <div className="category-title-wrapper">
-                      <h3 className="category-title">{config.displayName}</h3>
-                      <ArrowRight className="category-arrow-icon" size={16} />
-                    </div>
-                    <p className="category-description">{description}</p>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+      <CategoryGrid />
 
       {/* Featured Products */}
-      <section className="featured-section">
-        <div className="container">
-          <div className="section-header-inline">
-            <div>
-              <h2 className="section-title">Featured Products</h2>
-              <div className="section-underline"></div>
-              <p className="section-description">
-                Top-tier security equipment for critical applications.
-              </p>
-            </div>
-            <Link href="/products" className="view-all-link">
-              View All Products
-              <ArrowRight className="arrow-icon" size={16} />
-            </Link>
-          </div>
-          <div className="products-grid">
-            {featuredProducts.map((product: Product) => {
-              // 获取产品的第一张图片作为特色图片
-              const firstImage = product.gallery && product.gallery.length > 0 
-                ? product.gallery[0].image 
-                : null
-              const imageUrl = firstImage && typeof firstImage === 'object'
-                ? (firstImage as Media).url
-                : 'https://placehold.co/537x460'
-              
-              // 获取主分类名称用作标签
-              const categoryName = product.mainCategory && typeof product.mainCategory === 'object'
-                ? product.mainCategory.name
-                : ''
-              
-              // 判断是否为新产品（创建时间在 30 天内）
-              const isNew = product.createdAt 
-                ? new Date(product.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
-                : false
-              
-              return (
-                <div key={product.id} className="product-card">
-                  <div className="product-image-wrapper">
-                    {isNew && <div className="product-badge">NEW</div>}
-                    <img 
-                      src={imageUrl || 'https://placehold.co/537x460'} 
-                      alt={product.model} 
-                      className="product-image" 
-                    />
-                  </div>
-                  <div className="product-content">
-                    <h3 className="product-name">{product.model}</h3>
-                    <div className="product-tags">
-                      {categoryName && (
-                        <span className="product-tag">{categoryName}</span>
-                      )}
-                      {product.description && (
-                        <span className="product-tag">
-                          {product.description.length > 20 
-                            ? product.description.substring(0, 20) + '...' 
-                            : product.description}
-                        </span>
-                      )}
-                    </div>
-                    <Link href={`/products/${product.slug}`} className="product-link">
-                      Learn More
-                    </Link>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+      <FeaturedProducts />
 
       {/* About IDView */}
       <section className="about-section">
