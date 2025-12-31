@@ -15,13 +15,13 @@ export function Header() {
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const navItems = [
+    { label: 'Home', href: '/', hasDropdown: false },
     { label: 'Products', href: '/products', hasDropdown: true },
     { label: 'Solutions', href: '/solutions', hasDropdown: false },
     { label: 'Project Registration', href: '/project-registration', hasDropdown: false },
     { label: 'Cybersecurity', href: '/cybersecurity', hasDropdown: false },
     { label: 'About Us', href: '/about-us', hasDropdown: false },
     { label: 'Support', href: '/support', hasDropdown: false },
-    { label: 'News', href: '/news', hasDropdown: false },
   ]
 
   const clearCloseTimeout = useCallback(() => {
@@ -63,7 +63,7 @@ export function Header() {
       <div className="header-container">
         <div className="header-logo">
           <Link href="/" className="logo-link">
-            <span className="logo-text">LOGO</span>
+            <img src="/images/logo.webp" alt="Logo" className="logo-image" />
           </Link>
         </div>
         <nav className="header-nav">

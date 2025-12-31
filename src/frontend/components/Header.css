@@ -1,6 +1,6 @@
 .header {
   width: 100%;
-  background-color: rgb(255, 255, 255);
+  background-color: #3D4C99;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -24,9 +24,8 @@
 
 .logo-link {
   text-decoration: none;
-  color: rgb(0, 0, 0);
-  font-size: 24px;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
   transition: opacity 0.2s ease;
 }
 
@@ -34,7 +33,9 @@
   opacity: 0.8;
 }
 
-.logo-text {
+.logo-image {
+  height: 40px;
+  width: auto;
   display: block;
 }
 
@@ -64,7 +65,7 @@
 
 .nav-link {
   text-decoration: none;
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
   font-size: 16px;
   font-weight: 400;
   transition: opacity 0.2s ease;
@@ -120,8 +121,8 @@
     font-size: 14px;
   }
 
-  .logo-link {
-    font-size: 20px;
+  .logo-image {
+    height: 32px;
   }
 }
 
@@ -136,6 +137,10 @@
 
   .nav-link {
     font-size: 13px;
+  }
+
+  .logo-image {
+    height: 28px;
   }
 }
 

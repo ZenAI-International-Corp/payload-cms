@@ -176,7 +176,7 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Auto-generated from name, or enter custom slug
+   * Auto-generated from name, or enter custom slug (URL-unsafe characters will be replaced)
    */
   slug?: string | null;
   /**
@@ -223,7 +223,7 @@ export interface Product {
    */
   model: string;
   /**
-   * Auto-generated from model, or enter custom slug
+   * Auto-generated from model, or enter custom slug (URL-unsafe characters will be replaced)
    */
   slug?: string | null;
   /**
