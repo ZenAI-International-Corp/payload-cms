@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const method = request.method
 
-  let response = NextResponse.next()
+  const response = NextResponse.next()
 
   // ========================================
   // 1. Admin - Disable cache completely
