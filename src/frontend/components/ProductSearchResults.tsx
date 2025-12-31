@@ -34,8 +34,9 @@ export function ProductSearchResults() {
     try {
       setLoading(true)
       // Search in model and slug fields using Payload API
+      // Note: Hidden products are automatically filtered by access control
       const response = await fetch(
-        `/api/products?where[or][0][model][contains]=${encodeURIComponent(searchTerm)}&where[or][1][slug][contains]=${encodeURIComponent(searchTerm)}&limit=50&depth=1&status=published`
+        `/api/products?where[or][0][model][contains]=${encodeURIComponent(searchTerm)}&where[or][1][slug][contains]=${encodeURIComponent(searchTerm)}&limit=50&depth=1`
       )
       const data = (await response.json()) as { docs?: Product[] }
       if (data.docs) {

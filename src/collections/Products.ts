@@ -367,13 +367,13 @@ export const Products: CollectionConfig = {
       name: 'status',
       type: 'select',
       options: [
-        { label: 'Draft', value: 'draft' },
-        { label: 'Published', value: 'published' },
-        { label: 'Archived', value: 'archived' },
+        { label: 'Visible', value: 'visible' },
+        { label: 'Hidden', value: 'hidden' },
       ],
-      defaultValue: 'draft',
+      defaultValue: 'visible',
       admin: {
         position: 'sidebar',
+        description: 'Visible products will be shown on the frontend, hidden products will be filtered out',
       },
     },
   ],
@@ -470,7 +470,16 @@ export const Products: CollectionConfig = {
     ],
   },
   access: {
-    read: () => true,
+    read: ({ req }) => {
+      // In admin panel, show all products
+      if (req.user) {
+        return true
+      }
+      // On frontend, only show visible products
+      return {
+        status: { equals: 'visible' },
+      }
+    },
   },
   timestamps: true,
 }

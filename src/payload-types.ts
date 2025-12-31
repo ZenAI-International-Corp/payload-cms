@@ -345,7 +345,10 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  status?: ('draft' | 'published' | 'archived') | null;
+  /**
+   * Visible products will be shown on the frontend, hidden products will be filtered out
+   */
+  status?: ('visible' | 'hidden') | null;
   updatedAt: string;
   createdAt: string;
 }
