@@ -656,23 +656,23 @@
           "notNull": false,
           "autoincrement": false
         },
-        "details_content": {
-          "name": "details_content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "specification_content": {
-          "name": "specification_content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "featured_image_id": {
-          "name": "featured_image_id",
+        "main_category_id": {
+          "name": "main_category_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "details": {
+          "name": "details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "specification": {
+          "name": "specification",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -710,10 +710,10 @@
           ],
           "isUnique": true
         },
-        "products_featured_image_idx": {
-          "name": "products_featured_image_idx",
+        "products_main_category_idx": {
+          "name": "products_main_category_idx",
           "columns": [
-            "featured_image_id"
+            "main_category_id"
           ],
           "isUnique": false
         },
@@ -733,12 +733,12 @@
         }
       },
       "foreignKeys": {
-        "products_featured_image_id_media_id_fk": {
-          "name": "products_featured_image_id_media_id_fk",
+        "products_main_category_id_categories_id_fk": {
+          "name": "products_main_category_id_categories_id_fk",
           "tableFrom": "products",
-          "tableTo": "media",
+          "tableTo": "categories",
           "columnsFrom": [
-            "featured_image_id"
+            "main_category_id"
           ],
           "columnsTo": [
             "id"
@@ -1377,6 +1377,6 @@
   "internal": {
     "indexes": {}
   },
-  "id": "dc9a0b17-7443-4ec0-bd79-1e9ea85c6013",
+  "id": "0c1bff55-c483-40f1-9ee9-a84f7a532e6e",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

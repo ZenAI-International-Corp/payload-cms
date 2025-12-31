@@ -27,7 +27,7 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'description',
-      type: 'richText',
+      type: 'text',
       label: 'Product Description',
       admin: {
         description: 'Detailed product description',
@@ -41,7 +41,7 @@ export const Products: CollectionConfig = {
       admin: {
         description: 'Select the main product category (e.g., IP Cameras, NVR, etc.)',
       },
-      filterOptions: ({ data }) => {
+      filterOptions: () => {
         // Only show categories with type 'product-category' and no parent (main categories)
         return {
           type: { equals: 'product-category' },
@@ -338,19 +338,14 @@ export const Products: CollectionConfig = {
       ],
     },
     {
-      name: 'featuredImage',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        description: 'Main product image',
-      },
-    },
-    {
       name: 'gallery',
       type: 'array',
       label: 'Product Gallery',
       admin: {
-        description: 'Additional product images',
+        description: 'Product images. The first image will be used as the featured image. Use "批量上传图片" button to upload multiple images at once.',
+        components: {
+          Field: '/payload/components/BulkImageUploadField',
+        },
       },
       fields: [
         {
@@ -363,7 +358,7 @@ export const Products: CollectionConfig = {
           name: 'alt',
           type: 'text',
           admin: {
-            description: 'Alt text for the image',
+            description: 'Alt text for the image (auto-generated from filename if not provided)',
           },
         },
       ],
@@ -395,7 +390,7 @@ export const Products: CollectionConfig = {
       },
     ],
     beforeChange: [
-      ({ data, operation, req }) => {
+      ({ data }) => {
         // Merge all subcategories into a single categories array for easier querying
         if (data?.subcategories) {
           const allCategories: (string | number)[] = []

@@ -150,6 +150,9 @@ export interface User {
  */
 export interface Media {
   id: number;
+  /**
+   * Auto-generated from filename if not provided
+   */
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -222,21 +225,7 @@ export interface Product {
   /**
    * Detailed product description
    */
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  description?: string | null;
   /**
    * Select the main product category (e.g., IP Cameras, NVR, etc.)
    */
@@ -344,17 +333,13 @@ export interface Product {
       }[]
     | null;
   /**
-   * Main product image
-   */
-  featuredImage?: (number | null) | Media;
-  /**
-   * Additional product images
+   * Product images. The first image will be used as the featured image. Use "批量上传图片" button to upload multiple images at once.
    */
   gallery?:
     | {
         image: number | Media;
         /**
-         * Alt text for the image
+         * Alt text for the image (auto-generated from filename if not provided)
          */
         alt?: string | null;
         id?: string | null;
@@ -532,7 +517,6 @@ export interface ProductsSelect<T extends boolean = true> {
         description?: T;
         id?: T;
       };
-  featuredImage?: T;
   gallery?:
     | T
     | {
