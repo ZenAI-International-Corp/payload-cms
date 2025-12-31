@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
 import { Products } from './collections/Products'
 import { seedCategories } from './seed/categories'
+import { registerAllCacheStrategies } from './payload/config/cacheStrategies'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -45,6 +46,9 @@ export default buildConfig({
     }),
   ],
   onInit: async (payload) => {
+    // 注册所有集合的缓存清除策略
+    registerAllCacheStrategies()
+    
     // Seed default categories on initialization
     // Only runs if no categories exist yet
     await seedCategories(payload)

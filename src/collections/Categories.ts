@@ -1,4 +1,29 @@
 import type { CollectionConfig } from 'payload'
+import { purgeCacheAfterChange, purgeCacheAfterDelete } from '../payload/hooks/purgeCacheAfterChange'
+import type { CollectionCacheStrategy } from '../payload/utils/cloudflareCache'
+
+/**
+ * Categories 集合的缓存策略
+ * 
+ * 分类变化较少，可以使用更长的缓存时间
+ */
+export const CategoriesCacheStrategy: CollectionCacheStrategy = {
+  // Cache purge configuration
+  tags: ['api-categories', 'page-products-list'],
+  urlPatterns: [
+    (doc, baseUrl) => `${baseUrl}/api/categories`,
+    (doc, baseUrl) => doc?.id ? `${baseUrl}/api/categories/${doc.id}` : '',
+    (doc, baseUrl) => doc?.slug ? `${baseUrl}/products/category/${doc.slug}` : '',
+  ],
+  
+  // API cache configuration (/api/categories)
+  apiCache: {
+    maxAge: 60,                  // 1 minute browser cache (can't be purged remotely)
+    sMaxAge: 2592000,            // 30 days CDN cache (auto-purged on content update)
+    staleWhileRevalidate: 86400, // 1 day stale content
+    cacheTag: 'api-categories',
+  },
+}
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -78,6 +103,10 @@ export const Categories: CollectionConfig = {
         return data
       },
     ],
+    // 在内容变更后清除 Cloudflare 缓存
+    afterChange: [purgeCacheAfterChange],
+    // 在内容删除后清除 Cloudflare 缓存
+    afterDelete: [purgeCacheAfterDelete],
   },
   access: {
     read: () => true,
