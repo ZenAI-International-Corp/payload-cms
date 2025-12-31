@@ -14,12 +14,15 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next()
 
   // ========================================
-  // 1. Admin - Disable cache completely
+  // 1. Admin Pages - Short-term cache for static admin UI
   // ========================================
   if (pathname.startsWith('/admin')) {
-    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
-    response.headers.set('Pragma', 'no-cache')
-    response.headers.set('Expires', '0')
+    // Admin UI can be cached (it's static Next.js pages)
+    // Only the API calls need to be fresh
+    response.headers.set(
+      'Cache-Control',
+      'private, max-age=60, s-maxage=300, must-revalidate'
+    )
     return response
   }
 
@@ -30,7 +33,7 @@ export function middleware(request: NextRequest) {
     if (method === 'GET') {
       response.headers.set(
         'Cache-Control',
-        'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+        'public, max-age=60, s-maxage=604800, stale-while-revalidate=86400'
       )
     } else {
       response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
@@ -39,11 +42,14 @@ export function middleware(request: NextRequest) {
   }
 
   // ========================================
-  // 3. Collection API Routes - Load cache config from strategies
+  // 3. API Routes - Cache based on authentication and method
   // ========================================
   if (pathname.startsWith('/api/')) {
-    // Only cache GET requests
-    if (method !== 'GET') {
+    // Check if user is authenticated (has payload-token cookie)
+    const hasAuthToken = request.cookies.has('payload-token')
+    
+    // Admin/Authenticated API - No cache
+    if (hasAuthToken || method !== 'GET') {
       response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
       return response
     }
@@ -70,7 +76,7 @@ export function middleware(request: NextRequest) {
     // Default API cache for unregistered collections
     response.headers.set(
       'Cache-Control',
-      'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+      'public, max-age=60, s-maxage=604800, stale-while-revalidate=86400'
     )
     response.headers.set('Vary', 'Accept-Encoding')
     return response
@@ -122,7 +128,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/') {
     response.headers.set(
       'Cache-Control',
-      'public, max-age=300, s-maxage=3600, stale-while-revalidate=600'
+      'public, max-age=120, s-maxage=604800, stale-while-revalidate=86400'
     )
     response.headers.set('Vary', 'Accept-Encoding')
     response.headers.set('Cache-Tag', 'page-home')
@@ -140,7 +146,7 @@ export function middleware(request: NextRequest) {
     } else {
       response.headers.set(
         'Cache-Control',
-        'public, max-age=86400, s-maxage=31536000, stale-while-revalidate=86400'
+        'public, max-age=3600, s-maxage=31536000, stale-while-revalidate=86400'
       )
     }
     return response
@@ -151,7 +157,7 @@ export function middleware(request: NextRequest) {
   // ========================================
   response.headers.set(
     'Cache-Control',
-    'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+    'public, max-age=60, s-maxage=604800, stale-while-revalidate=86400'
   )
   response.headers.set('Vary', 'Accept-Encoding')
 

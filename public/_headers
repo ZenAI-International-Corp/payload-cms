@@ -1,86 +1,81 @@
 # ========================================
-# 静态资源 - 永久缓存（带版本号的资源）
+# Static Assets - Immutable cache (versioned resources)
 # ========================================
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
 
-# Next.js 图片优化
+# Next.js Image Optimization
 /_next/image*
-  Cache-Control: public,max-age=86400,s-maxage=31536000,stale-while-revalidate=86400
+  Cache-Control: public,max-age=3600,s-maxage=31536000,stale-while-revalidate=86400
 
 # ========================================
-# 前端 API - 缓存读取操作
+# Collection APIs - Handled by middleware (these are fallbacks)
 # ========================================
 
-# 产品列表 API（缓存 5 分钟）
+# Products API (1 min browser, 7 days CDN with auto-purge)
 /api/products*
-  Cache-Control: public,max-age=300,s-maxage=3600,stale-while-revalidate=600
+  Cache-Control: public,max-age=60,s-maxage=604800,stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# 分类 API（缓存 10 分钟）
+# Categories API (1 min browser, 30 days CDN with auto-purge)
 /api/categories*
-  Cache-Control: public,max-age=600,s-maxage=7200,stale-while-revalidate=1200
+  Cache-Control: public,max-age=60,s-maxage=2592000,stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# 媒体/上传资源（缓存 1 小时）
+# Media API (1 min browser, 30 days CDN)
 /api/media*
-  Cache-Control: public,max-age=3600,s-maxage=86400,stale-while-revalidate=7200
+  Cache-Control: public,max-age=60,s-maxage=2592000,stale-while-revalidate=86400
   Vary: Accept-Encoding
 
 # ========================================
-# Admin API - 禁止缓存
+# Admin Pages - Short cache for static UI
 # ========================================
 /admin/*
-  Cache-Control: private,no-cache,no-store,must-revalidate
-  Pragma: no-cache
-  Expires: 0
+  Cache-Control: private,max-age=60,s-maxage=300,must-revalidate
 
-/api/admin*
-  Cache-Control: private,no-cache,no-store,must-revalidate
-  Pragma: no-cache
-  Expires: 0
-
-# GraphQL - 禁止缓存（除非你需要缓存特定查询）
+# ========================================
+# GraphQL - Handled by middleware based on authentication
+# ========================================
 /api/graphql*
-  Cache-Control: private,no-cache,no-store,must-revalidate
+  Cache-Control: public,max-age=60,s-maxage=604800,stale-while-revalidate=86400
 
 # ========================================
-# 前端页面 - 适度缓存
+# Frontend Pages - Handled by middleware (these are fallbacks)
 # ========================================
 
-# 产品页面（缓存 5 分钟）
+# Product Pages (2 min browser, 7 days CDN with auto-purge)
 /products/*
-  Cache-Control: public,max-age=300,s-maxage=3600,stale-while-revalidate=600
+  Cache-Control: public,max-age=120,s-maxage=604800,stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# 首页（缓存 5 分钟）
+# Home Page (2 min browser, 7 days CDN)
 /
-  Cache-Control: public,max-age=300,s-maxage=3600,stale-while-revalidate=600
+  Cache-Control: public,max-age=120,s-maxage=604800,stale-while-revalidate=86400
   Vary: Accept-Encoding
 
 # ========================================
-# 公共资源
+# Public Assets - Long-term cache
 # ========================================
 /images/*
-  Cache-Control: public,max-age=86400,s-maxage=31536000,stale-while-revalidate=86400
+  Cache-Control: public,max-age=3600,s-maxage=31536000,stale-while-revalidate=86400
 
 /*.ico
-  Cache-Control: public,max-age=86400,immutable
+  Cache-Control: public,max-age=31536000,immutable
 
 /*.png
-  Cache-Control: public,max-age=86400,s-maxage=31536000
+  Cache-Control: public,max-age=3600,s-maxage=31536000
 
 /*.jpg
-  Cache-Control: public,max-age=86400,s-maxage=31536000
+  Cache-Control: public,max-age=3600,s-maxage=31536000
 
 /*.jpeg
-  Cache-Control: public,max-age=86400,s-maxage=31536000
+  Cache-Control: public,max-age=3600,s-maxage=31536000
 
 /*.webp
-  Cache-Control: public,max-age=86400,s-maxage=31536000
+  Cache-Control: public,max-age=3600,s-maxage=31536000
 
 /*.svg
-  Cache-Control: public,max-age=86400,s-maxage=31536000
+  Cache-Control: public,max-age=3600,s-maxage=31536000
 
 /*.woff
   Cache-Control: public,max-age=31536000,immutable
