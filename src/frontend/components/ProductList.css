@@ -162,6 +162,9 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  user-select: none;
 }
 
 .product-list-subcategory-item:hover {
@@ -171,6 +174,20 @@
 .product-list-subcategory-item.active {
   background-color: rgb(250, 250, 250);
   font-weight: 500;
+}
+
+.product-list-subcategory-item input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: rgb(0, 0, 0);
+}
+
+.product-list-subcategory-count {
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 .product-list-right {

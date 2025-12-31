@@ -16,8 +16,38 @@ export function ProductList() {
   const [mainCategory, setMainCategory] = useState<Category | null>(null)
   const [subcategories, setSubcategories] = useState<Category[]>([])
   const [products, setProducts] = useState<Product[]>([])
-  const [selectedSubcategory, setSelectedSubcategory] = useState<Category | null>(null)
+  const [selectedSubcategories, setSelectedSubcategories] = useState<Category[]>([])
+  const [subcategoryCounts, setSubcategoryCounts] = useState<Record<number, number>>({})
   const [loading, setLoading] = useState(false)
+
+  // Fetch product count for each subcategory
+  const fetchSubcategoryCounts = useCallback(async () => {
+    if (!mainCategory || !subcategories.length) return
+
+    try {
+      const counts: Record<number, number> = {}
+      
+      // Fetch count for each subcategory
+      await Promise.all(
+        subcategories.map(async (subcategory) => {
+          try {
+            const response = await fetch(
+              `/api/products?where[and][0][mainCategory][equals]=${mainCategory.id}&where[and][1][categories][contains]=${subcategory.id}&limit=0&depth=0`
+            )
+            const data = (await response.json()) as { totalDocs?: number }
+            counts[subcategory.id] = data.totalDocs || 0
+          } catch (error) {
+            console.error(`Error fetching count for subcategory ${subcategory.id}:`, error)
+            counts[subcategory.id] = 0
+          }
+        })
+      )
+      
+      setSubcategoryCounts(counts)
+    } catch (error) {
+      console.error('Error fetching subcategory counts:', error)
+    }
+  }, [mainCategory, subcategories])
 
   const fetchProducts = useCallback(async () => {
     if (!mainCategory) return
@@ -26,16 +56,43 @@ export function ProductList() {
       setLoading(true)
       let url = `/api/products?where[mainCategory][equals]=${mainCategory.id}&limit=100&depth=1`
 
-      // If subcategory is selected, filter by subcategory in categories array
-      if (selectedSubcategory) {
-        // Use 'in' operator to check if subcategory is in the categories array
-        url = `/api/products?where[and][0][mainCategory][equals]=${mainCategory.id}&where[and][1][categories][contains]=${selectedSubcategory.id}&limit=100&depth=1`
+      // If subcategories are selected, filter by subcategories using OR logic
+      if (selectedSubcategories.length > 0) {
+        // Build OR query for multiple subcategories
+        const orConditions = selectedSubcategories.map((subcategory, index) => ({
+          [`categories[contains]`]: subcategory.id,
+        }))
+        
+        // For Payload API, we need to use a different approach
+        // Use 'in' operator if available, or build OR query
+        if (selectedSubcategories.length === 1) {
+          url = `/api/products?where[and][0][mainCategory][equals]=${mainCategory.id}&where[and][1][categories][contains]=${selectedSubcategories[0].id}&limit=100&depth=1`
+        } else {
+          // For multiple selections, we need to fetch all and filter client-side
+          // Or use a more complex query structure
+          const categoryIds = selectedSubcategories.map((sc) => sc.id).join(',')
+          // Note: Payload may not support complex OR queries easily, so we'll fetch all and filter
+          url = `/api/products?where[mainCategory][equals]=${mainCategory.id}&limit=1000&depth=1`
+        }
       }
 
       const response = await fetch(url)
       const data = (await response.json()) as { docs?: Product[] }
       if (data.docs) {
-        setProducts(data.docs)
+        let filteredProducts = data.docs
+        
+        // If multiple subcategories selected, filter client-side
+        if (selectedSubcategories.length > 1) {
+          const selectedIds = new Set(selectedSubcategories.map((sc) => sc.id))
+          filteredProducts = data.docs.filter((product) => {
+            if (!product.categories || !Array.isArray(product.categories)) return false
+            return product.categories.some((catId) => 
+              typeof catId === 'number' ? selectedIds.has(catId) : selectedIds.has(Number(catId))
+            )
+          })
+        }
+        
+        setProducts(filteredProducts)
       }
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -43,7 +100,7 @@ export function ProductList() {
     } finally {
       setLoading(false)
     }
-  }, [mainCategory, selectedSubcategory])
+  }, [mainCategory, selectedSubcategories])
 
   // Fetch main category and subcategories
   useEffect(() => {
@@ -52,24 +109,31 @@ export function ProductList() {
     }
   }, [categoryParam])
 
-  // Set selected subcategory from URL param
+  // Set selected subcategories from URL param
   useEffect(() => {
     if (subcategoryParam && subcategories.length > 0) {
-      const subcategory = subcategories.find((cat) => cat.id === Number(subcategoryParam))
-      if (subcategory) {
-        setSelectedSubcategory(subcategory)
-      }
+      // Support comma-separated subcategory IDs for multiple selection
+      const subcategoryIds = subcategoryParam.split(',').map((id) => Number(id.trim()))
+      const selected = subcategories.filter((cat) => subcategoryIds.includes(cat.id))
+      setSelectedSubcategories(selected)
     } else {
-      setSelectedSubcategory(null)
+      setSelectedSubcategories([])
     }
   }, [subcategoryParam, subcategories])
 
-  // Fetch products when category or subcategory changes
+  // Fetch subcategory counts when subcategories are loaded
+  useEffect(() => {
+    if (subcategories.length > 0 && mainCategory) {
+      fetchSubcategoryCounts()
+    }
+  }, [subcategories, mainCategory, fetchSubcategoryCounts])
+
+  // Fetch products when category or subcategories change
   useEffect(() => {
     if (mainCategory) {
       fetchProducts()
     }
-  }, [mainCategory, selectedSubcategory, fetchProducts])
+  }, [mainCategory, selectedSubcategories, fetchProducts])
 
   const fetchCategoryData = async (categoryId: number) => {
     try {
@@ -94,14 +158,32 @@ export function ProductList() {
     }
   }
 
-  const handleSubcategoryClick = (subcategory: Category) => {
-    setSelectedSubcategory(subcategory)
-    router.push(`/products/category?category=${mainCategory?.id}&subcategory=${subcategory.id}`)
+  const handleSubcategoryToggle = (subcategory: Category) => {
+    const isSelected = selectedSubcategories.some((sc) => sc.id === subcategory.id)
+    let newSelected: Category[]
+    
+    if (isSelected) {
+      // Remove from selection
+      newSelected = selectedSubcategories.filter((sc) => sc.id !== subcategory.id)
+    } else {
+      // Add to selection
+      newSelected = [...selectedSubcategories, subcategory]
+    }
+    
+    setSelectedSubcategories(newSelected)
+    
+    // Update URL
+    if (newSelected.length === 0) {
+      router.push(`/products/category?category=${mainCategory?.id}`, { scroll: false })
+    } else {
+      const subcategoryIds = newSelected.map((sc) => sc.id).join(',')
+      router.push(`/products/category?category=${mainCategory?.id}&subcategory=${subcategoryIds}`, { scroll: false })
+    }
   }
 
-  const handleViewAllClick = () => {
-    setSelectedSubcategory(null)
-    router.push(`/products/category?category=${mainCategory?.id}`)
+  const handleClearAll = () => {
+    setSelectedSubcategories([])
+    router.push(`/products/category?category=${mainCategory?.id}`, { scroll: false })
   }
 
   // Group subcategories by type
@@ -154,9 +236,9 @@ export function ProductList() {
           <div className="product-list-subcategories">
             <div className="product-list-subcategories-header">
               <h2>Subcategories</h2>
-              {selectedSubcategory && (
-                <button onClick={handleViewAllClick} className="product-list-view-all-button">
-                  View All
+              {selectedSubcategories.length > 0 && (
+                <button onClick={handleClearAll} className="product-list-view-all-button">
+                  Clear All
                 </button>
               )}
             </div>
@@ -168,17 +250,29 @@ export function ProductList() {
                   <div key={type} className="product-list-subcategory-group">
                     <h3 className="product-list-subcategory-group-title">{formatTypeName(type)}</h3>
                     <div className="product-list-subcategory-group-items">
-                      {items.map((subcategory) => (
-                        <button
-                          key={subcategory.id}
-                          onClick={() => handleSubcategoryClick(subcategory)}
-                          className={`product-list-subcategory-item ${
-                            selectedSubcategory?.id === subcategory.id ? 'active' : ''
-                          }`}
-                        >
-                          {subcategory.name}
-                        </button>
-                      ))}
+                      {items.map((subcategory) => {
+                        const isSelected = selectedSubcategories.some((sc) => sc.id === subcategory.id)
+                        const count = subcategoryCounts[subcategory.id] || 0
+                        return (
+                          <label
+                            key={subcategory.id}
+                            className={`product-list-subcategory-item ${
+                              isSelected ? 'active' : ''
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleSubcategoryToggle(subcategory)}
+                              style={{ marginRight: '8px', cursor: 'pointer' }}
+                            />
+                            <span>
+                              {subcategory.name}
+                              {count > 0 && <span className="product-list-subcategory-count"> ({count})</span>}
+                            </span>
+                          </label>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
@@ -193,8 +287,10 @@ export function ProductList() {
           <div className="product-list-products">
             <div className="product-list-products-header">
               <h2>
-                {selectedSubcategory
-                  ? `${selectedSubcategory.name} Products`
+                {selectedSubcategories.length > 0
+                  ? selectedSubcategories.length === 1
+                    ? `${selectedSubcategories[0].name} Products`
+                    : `${selectedSubcategories.length} Selected Subcategories`
                   : `All ${mainCategory?.name} Products`}
               </h2>
               <p className="product-list-products-count">
