@@ -379,12 +379,45 @@ export const Products: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      ({ data, operation }) => {
-        if (operation === 'create' && data && !data.slug && data.model) {
-          data.slug = data.model
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
+      async ({ data, operation, req }) => {
+        if (operation === 'create' && data && data.model) {
+          // Generate slug from model if not provided
+          if (!data.slug) {
+            data.slug = data.model
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '')
+          }
+
+          // Check if slug already exists (important for duplicate operation)
+          // If it exists, append a suffix to make it unique
+          if (data.slug) {
+            let uniqueSlug = data.slug
+            let counter = 1
+            let exists = true
+
+            while (exists) {
+              const existing = await req.payload.find({
+                collection: 'products',
+                where: {
+                  slug: { equals: uniqueSlug },
+                },
+                limit: 1,
+                depth: 0,
+                overrideAccess: true, // Bypass access control for slug check
+              })
+
+              if (existing.totalDocs === 0) {
+                exists = false
+              } else {
+                // Slug exists, try with suffix
+                uniqueSlug = `${data.slug}-${counter}`
+                counter++
+              }
+            }
+
+            data.slug = uniqueSlug
+          }
         }
         return data
       },
