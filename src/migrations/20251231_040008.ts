@@ -39,10 +39,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.run(sql`DROP TABLE \`products\`;`)
   await db.run(sql`ALTER TABLE \`__new_products\` RENAME TO \`products\`;`)
   await db.run(sql`PRAGMA foreign_keys=ON;`)
-  await db.run(sql`CREATE UNIQUE INDEX \`products_slug_idx\` ON \`products\` (\`slug\`);`)
-  await db.run(sql`CREATE INDEX \`products_main_category_idx\` ON \`products\` (\`main_category_id\`);`)
-  await db.run(sql`CREATE INDEX \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
-  await db.run(sql`CREATE INDEX \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
+  // Use IF NOT EXISTS to prevent errors if index already exists
+  await db.run(sql`CREATE UNIQUE INDEX IF NOT EXISTS \`products_slug_idx\` ON \`products\` (\`slug\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_main_category_idx\` ON \`products\` (\`main_category_id\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
@@ -84,8 +85,9 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   await db.run(sql`DROP TABLE \`products\`;`)
   await db.run(sql`ALTER TABLE \`__new_products\` RENAME TO \`products\`;`)
   await db.run(sql`PRAGMA foreign_keys=ON;`)
-  await db.run(sql`CREATE UNIQUE INDEX \`products_slug_idx\` ON \`products\` (\`slug\`);`)
-  await db.run(sql`CREATE INDEX \`products_main_category_idx\` ON \`products\` (\`main_category_id\`);`)
-  await db.run(sql`CREATE INDEX \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
-  await db.run(sql`CREATE INDEX \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
+  // Use IF NOT EXISTS to prevent errors if index already exists
+  await db.run(sql`CREATE UNIQUE INDEX IF NOT EXISTS \`products_slug_idx\` ON \`products\` (\`slug\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_main_category_idx\` ON \`products\` (\`main_category_id\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
+  await db.run(sql`CREATE INDEX IF NOT EXISTS \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
 }

@@ -154,6 +154,10 @@ export interface Media {
    * Auto-generated from filename if not provided
    */
   alt: string;
+  /**
+   * SHA-256 hash of the file for duplicate detection
+   */
+  hash?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -333,7 +337,7 @@ export interface Product {
       }[]
     | null;
   /**
-   * Product images. The first image will be used as the featured image. Use "批量上传图片" button to upload multiple images at once.
+   * Product images. The first image will be used as the featured image. Use "Bulk Upload Images" button to upload multiple images at once.
    */
   gallery?:
     | {
@@ -462,6 +466,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  hash?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

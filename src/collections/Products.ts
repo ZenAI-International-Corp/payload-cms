@@ -342,7 +342,7 @@ export const Products: CollectionConfig = {
       type: 'array',
       label: 'Product Gallery',
       admin: {
-        description: 'Product images. The first image will be used as the featured image. Use "批量上传图片" button to upload multiple images at once.',
+        description: 'Product images. The first image will be used as the featured image. Use "Bulk Upload Images" button to upload multiple images at once.',
         components: {
           Field: '/payload/components/BulkImageUploadField',
         },

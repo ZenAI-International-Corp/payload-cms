@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { ArrayField, useField, useForm } from '@payloadcms/ui'
+import { ArrayField, useField } from '@payloadcms/ui'
 import type { ArrayFieldClientComponent } from 'payload'
 
 /**
@@ -10,13 +10,45 @@ import type { ArrayFieldClientComponent } from 'payload'
  */
 const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
   const { path } = props
-  const { dispatchFields } = useForm()
-  const { value: galleryValue } = useField<Array<{ image: string | number; alt?: string }>>({
+  const { value: galleryValue, setValue } = useField<Array<{ image: string | number; alt?: string }>>({
     path,
   })
 
   const [uploading, setUploading] = useState(false)
   const [uploadCount, setUploadCount] = useState(0)
+
+  // Helper function to calculate file hash
+  const calculateFileHash = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer()
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // Helper function to check if file hash exists
+  const checkFileHash = async (hash: string): Promise<{ exists: boolean; id?: string | number; alt?: string }> => {
+    try {
+      const response = await fetch('/api/media/check-hash', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ hash }),
+      })
+
+      if (!response.ok) {
+        // If endpoint fails, assume file doesn't exist and proceed with upload
+        return { exists: false }
+      }
+
+      const result = (await response.json()) as { exists: boolean; id?: string | number; alt?: string }
+      return result
+    } catch (error) {
+      // If check fails, assume file doesn't exist and proceed with upload
+      console.error('Error checking file hash:', error)
+      return { exists: false }
+    }
+  }
 
   const handleBulkUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +59,7 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
       setUploadCount(files.length)
       const uploadPromises: Array<Promise<{ id: string | number; alt: string }>> = []
 
-      // Upload each file using Payload REST API
+      // Process each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
 
@@ -37,11 +69,26 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
             const filename = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').trim()
             const alt = filename || `image-${Math.random().toString(36).substring(2, 9)}`
 
-            // Upload file to media collection using Payload REST API
-            // Authentication is handled automatically via cookies in Admin Panel
+            // Calculate file hash
+            const fileHash = await calculateFileHash(file)
+
+            // Check if file with same hash already exists
+            const hashCheck = await checkFileHash(fileHash)
+
+            if (hashCheck.exists && hashCheck.id) {
+              // File already exists, use existing file ID
+              return {
+                id: hashCheck.id,
+                alt: hashCheck.alt || alt,
+              }
+            }
+
+            // File doesn't exist, proceed with upload
+            // Include hash in form data so server doesn't need to calculate it
             const formData = new FormData()
             formData.append('file', file)
             formData.append('alt', alt)
+            formData.append('hash', fileHash) // Send hash to server to avoid server-side calculation
 
             const response = await fetch('/api/media', {
               method: 'POST',
@@ -78,17 +125,14 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
         const results = await Promise.all(uploadPromises)
 
         // Add all uploaded images to the gallery array
-        const currentValue = galleryValue || []
-        const newItems = results.map((result) => ({
-          image: result.id,
-          alt: result.alt,
-        }))
-
-        // Update the field value
-        dispatchFields({
-          type: 'UPDATE',
-          path,
-          value: [...currentValue, ...newItems],
+        // Use functional update to ensure we get the latest value
+        setValue((prevValue: Array<{ image: string | number; alt?: string }> | undefined) => {
+          const currentValue = Array.isArray(prevValue) ? prevValue : []
+          const newItems = results.map((result) => ({
+            image: result.id,
+            alt: result.alt,
+          }))
+          return [...currentValue, ...newItems]
         })
       } catch (error) {
         console.error('Error during bulk upload:', error)
@@ -100,7 +144,7 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
         event.target.value = ''
       }
     },
-    [dispatchFields, path, galleryValue],
+    [setValue],
   )
 
   return (
