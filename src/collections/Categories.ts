@@ -44,7 +44,23 @@ export const Categories: CollectionConfig = {
       unique: true,
       index: true,
       admin: {
-        description: 'Auto-generated from name, or enter custom slug',
+        description: 'Auto-generated from name, or enter custom slug (URL-unsafe characters will be replaced)',
+      },
+      validate: (value: string | undefined) => {
+        if (!value) return true // Let hook generate it
+        
+        // Check for URL-unsafe characters
+        const unsafeChars = /[^a-z0-9-]/
+        if (unsafeChars.test(value)) {
+          return 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }
+        
+        // Check for leading/trailing hyphens
+        if (value.startsWith('-') || value.endsWith('-')) {
+          return 'Slug cannot start or end with a hyphen'
+        }
+        
+        return true
       },
     },
     {
@@ -94,11 +110,23 @@ export const Categories: CollectionConfig = {
   hooks: {
     beforeValidate: [
       ({ data, operation }) => {
-        if (operation === 'create' && data && !data.slug && data.name) {
-          data.slug = data.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '')
+        if (data && (operation === 'create' || operation === 'update')) {
+          // Sanitize slug function - removes URL-unsafe characters
+          const sanitizeSlug = (text: string): string => {
+            return text
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dash
+              .replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
+          }
+
+          // Generate or sanitize slug
+          if (!data.slug && data.name) {
+            // No slug provided, generate from name
+            data.slug = sanitizeSlug(data.name)
+          } else if (data.slug) {
+            // Slug provided (manually or from previous), sanitize it
+            data.slug = sanitizeSlug(data.slug)
+          }
         }
         return data
       },

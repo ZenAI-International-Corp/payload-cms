@@ -55,7 +55,23 @@ export const Products: CollectionConfig = {
       unique: true,
       index: true,
       admin: {
-        description: 'Auto-generated from model, or enter custom slug',
+        description: 'Auto-generated from model, or enter custom slug (URL-unsafe characters will be replaced)',
+      },
+      validate: (value: string | undefined) => {
+        if (!value) return true // Let hook generate it
+        
+        // Check for URL-unsafe characters
+        const unsafeChars = /[^a-z0-9-]/
+        if (unsafeChars.test(value)) {
+          return 'Slug can only contain lowercase letters, numbers, and hyphens'
+        }
+        
+        // Check for leading/trailing hyphens
+        if (value.startsWith('-') || value.endsWith('-')) {
+          return 'Slug cannot start or end with a hyphen'
+        }
+        
+        return true
       },
     },
     {
@@ -413,17 +429,25 @@ export const Products: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {
-        if (operation === 'create' && data && data.model) {
-          // Generate slug from model if not provided
-          if (!data.slug) {
-            data.slug = data.model
+        if (data && (operation === 'create' || operation === 'update')) {
+          // Sanitize slug function - removes URL-unsafe characters
+          const sanitizeSlug = (text: string): string => {
+            return text
               .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/(^-|-$)/g, '')
+              .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with dash
+              .replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
           }
 
-          // Check if slug already exists (important for duplicate operation)
-          // If it exists, append a suffix to make it unique
+          // Generate or sanitize slug
+          if (!data.slug && data.model) {
+            // No slug provided, generate from model
+            data.slug = sanitizeSlug(data.model)
+          } else if (data.slug) {
+            // Slug provided (manually or from previous), sanitize it
+            data.slug = sanitizeSlug(data.slug)
+          }
+
+          // Ensure slug is unique (only on create, or on update if slug changed)
           if (data.slug) {
             let uniqueSlug = data.slug
             let counter = 1
@@ -440,7 +464,12 @@ export const Products: CollectionConfig = {
                 overrideAccess: true, // Bypass access control for slug check
               })
 
-              if (existing.totalDocs === 0) {
+              // Check if the found document is the current one (for updates)
+              const isCurrentDoc = operation === 'update' && 
+                existing.docs.length > 0 && 
+                existing.docs[0].id === req.data?.id
+
+              if (existing.totalDocs === 0 || isCurrentDoc) {
                 exists = false
               } else {
                 // Slug exists, try with suffix
