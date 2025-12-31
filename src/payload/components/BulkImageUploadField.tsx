@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { ArrayField, useField } from '@payloadcms/ui'
+import { ArrayField, useField, useForm } from '@payloadcms/ui'
 import type { ArrayFieldClientComponent } from 'payload'
 
 /**
@@ -13,6 +13,7 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
   const { value: galleryValue, setValue } = useField<Array<{ image: string | number; alt?: string }>>({
     path,
   })
+  const { dispatchFields } = useForm()
 
   const [uploading, setUploading] = useState(false)
   const [uploadCount, setUploadCount] = useState(0)
@@ -124,16 +125,31 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
         // Wait for all uploads to complete
         const results = await Promise.all(uploadPromises)
 
-        // Add all uploaded images to the gallery array
-        // Use functional update to ensure we get the latest value
-        setValue((prevValue: Array<{ image: string | number; alt?: string }> | undefined) => {
-          const currentValue = Array.isArray(prevValue) ? prevValue : []
-          const newItems = results.map((result) => ({
-            image: result.id,
-            alt: result.alt,
-          }))
-          return [...currentValue, ...newItems]
+        console.log('Upload results:', results)
+        console.log('Current gallery value:', galleryValue)
+
+        // Get current gallery value
+        const currentValue = Array.isArray(galleryValue) ? galleryValue : []
+        
+        // Create new items with proper structure
+        const newItems = results.map((result) => ({
+          image: result.id,
+          alt: result.alt || '',
+        }))
+        
+        const updatedValue = [...currentValue, ...newItems]
+        console.log('Updated value to set:', updatedValue)
+        
+        // Try both methods to ensure the update works
+        // Method 1: Use dispatchFields UPDATE
+        dispatchFields({
+          type: 'UPDATE',
+          path,
+          value: updatedValue,
         })
+        
+        // Method 2: Also use setValue as a fallback
+        setValue(updatedValue)
       } catch (error) {
         console.error('Error during bulk upload:', error)
         alert('Some files failed to upload. Please check the console for details.')
@@ -144,7 +160,7 @@ const BulkImageUploadField: ArrayFieldClientComponent = (props) => {
         event.target.value = ''
       }
     },
-    [setValue],
+    [dispatchFields, path, galleryValue, setValue],
   )
 
   return (
