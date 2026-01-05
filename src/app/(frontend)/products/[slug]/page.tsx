@@ -5,8 +5,9 @@ import type { Category } from '@/payload-types'
 import { ProductDetail } from '@/frontend/components'
 import { notFound } from 'next/navigation'
 
-// 启用 ISR - 页面将在首次访问时生成，然后每小时重新验证
-export const revalidate = 3600 // 1 hour
+// 动态渲染配置
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // ISR: 1 hour
 export const dynamicParams = true // 允许动态生成未预渲染的页面
 
 // 生成页面元数据

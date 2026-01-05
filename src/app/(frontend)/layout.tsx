@@ -5,6 +5,9 @@ import { Header } from '@/frontend/components'
 import { CategoriesProvider } from '@/frontend/contexts/CategoriesContext'
 import './styles.css'
 
+// 动态渲染配置
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   description: 'Professional Video Surveillance Equipment and Intelligent Security Solutions',
   title: 'IDView - Digital Video Recording Solutions',

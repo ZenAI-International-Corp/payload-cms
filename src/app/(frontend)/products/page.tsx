@@ -3,8 +3,9 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { ProductsCenter } from '@/frontend/components'
 
-// 设置重新验证时间（ISR）
-export const revalidate = 3600 // 1 hour
+// 动态渲染配置
+export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // ISR: 1 hour
 
 // 生成页面元数据
 export const metadata = {
