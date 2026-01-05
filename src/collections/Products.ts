@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { purgeCacheAfterChange, purgeCacheAfterDelete } from '../payload/hooks/purgeCacheAfterChange'
 import type { CollectionCacheStrategy } from '../payload/utils/cloudflareCache'
 import { lexicalHTMLField } from '@payloadcms/richtext-lexical'
 
@@ -7,29 +6,19 @@ import { lexicalHTMLField } from '@payloadcms/richtext-lexical'
  * Products 集合的缓存策略
  */
 export const ProductsCacheStrategy: CollectionCacheStrategy = {
-  // Cache purge configuration
-  tags: ['api-products', 'page-products-list', 'page-product', 'page-home'],
-  urlPatterns: [
-    (doc, baseUrl) => `${baseUrl}/api/products`,
-    (doc, baseUrl) => doc?.id ? `${baseUrl}/api/products/${doc.id}` : '',
-    (doc, baseUrl) => doc?.slug ? `${baseUrl}/products/${doc.slug}` : '',
-    (doc, baseUrl) => `${baseUrl}/products`,
-    (doc, baseUrl) => `${baseUrl}/`,
-  ],
-  
   // API cache configuration (/api/products)
   apiCache: {
-    maxAge: 60,                 // 1 minute browser cache (can't be purged remotely)
-    sMaxAge: 604800,            // 7 days CDN cache (auto-purged on content update)
-    staleWhileRevalidate: 86400, // 1 day stale content
+    maxAge: 300,                 // 5 minutes browser cache
+    sMaxAge: 3600,               // 1 hour CDN cache (减少 Worker 请求)
+    staleWhileRevalidate: 1800,  // 30 minutes stale content
     cacheTag: 'api-products',
   },
   
   // Page cache configuration (/products/*)
   pageCache: {
-    maxAge: 120,                // 2 minutes browser cache (can't be purged remotely)
-    sMaxAge: 604800,            // 7 days CDN cache (auto-purged on content update)
-    staleWhileRevalidate: 86400, // 1 day stale content
+    maxAge: 600,                 // 10 minutes browser cache
+    sMaxAge: 3600,               // 1 hour CDN cache (减少 Worker 请求)
+    staleWhileRevalidate: 1800,  // 30 minutes stale content
     cacheTag: 'page-product',
   },
 }
@@ -572,10 +561,6 @@ export const Products: CollectionConfig = {
         return doc
       },
     ],
-    // 在内容变更后清除 Cloudflare 缓存
-    afterChange: [purgeCacheAfterChange],
-    // 在内容删除后清除 Cloudflare 缓存
-    afterDelete: [purgeCacheAfterDelete],
   },
   access: {
     read: ({ req }) => {

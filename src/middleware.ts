@@ -76,7 +76,7 @@ export function middleware(request: NextRequest) {
     // Default API cache for unregistered collections
     response.headers.set(
       'Cache-Control',
-      'public, max-age=60, s-maxage=604800, stale-while-revalidate=86400'
+      'public, max-age=300, s-maxage=3600, stale-while-revalidate=1800'
     )
     response.headers.set('Vary', 'Accept-Encoding')
     return response
@@ -128,7 +128,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/') {
     response.headers.set(
       'Cache-Control',
-      'public, max-age=120, s-maxage=604800, stale-while-revalidate=86400'
+      'public, max-age=600, s-maxage=3600, stale-while-revalidate=1800'
     )
     response.headers.set('Vary', 'Accept-Encoding')
     response.headers.set('Cache-Tag', 'page-home')
@@ -153,11 +153,11 @@ export function middleware(request: NextRequest) {
   }
 
   // ========================================
-  // 8. Default - Short-term cache
+  // 8. Default - Moderate cache
   // ========================================
   response.headers.set(
     'Cache-Control',
-    'public, max-age=60, s-maxage=604800, stale-while-revalidate=86400'
+    'public, max-age=300, s-maxage=3600, stale-while-revalidate=1800'
   )
   response.headers.set('Vary', 'Accept-Encoding')
 
