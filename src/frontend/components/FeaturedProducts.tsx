@@ -1,61 +1,15 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { Product, Media } from '@/payload-types'
 
-interface ApiResponse {
-  docs: Product[]
-  totalDocs: number
+interface FeaturedProductsProps {
+  initialProducts: Product[]
 }
 
-export function FeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('/api/products?limit=4&depth=1&sort=-createdAt')
-        const data = await response.json() as ApiResponse
-        setProducts(data.docs || [])
-      } catch (error) {
-        console.error('Error fetching featured products:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProducts()
-  }, [])
-
-  if (loading) {
-    return (
-      <section className="featured-section">
-        <div className="container">
-          <div className="section-header-inline">
-            <div>
-              <h2 className="section-title">Featured Products</h2>
-              <div className="section-underline"></div>
-              <p className="section-description">
-                Top-tier security equipment for critical applications.
-              </p>
-            </div>
-            <Link href="/products" className="view-all-link">
-              View All Products
-              <ArrowRight className="arrow-icon" size={16} />
-            </Link>
-          </div>
-          <div className="products-grid">
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-              Loading products...
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
+export function FeaturedProducts({ initialProducts }: FeaturedProductsProps) {
 
   return (
     <section className="featured-section">
@@ -74,7 +28,7 @@ export function FeaturedProducts() {
           </Link>
         </div>
         <div className="products-grid">
-          {products.map((product: Product) => {
+          {initialProducts.map((product: Product) => {
             // 获取产品的第一张图片作为特色图片
             const firstImage = product.gallery && product.gallery.length > 0 
               ? product.gallery[0].image 

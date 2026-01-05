@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { purgeCacheAfterChange, purgeCacheAfterDelete } from '../payload/hooks/purgeCacheAfterChange'
+import { revalidateAfterChange, revalidateAfterDelete } from '../payload/hooks/revalidateAfterChange'
 import type { CollectionCacheStrategy } from '../payload/utils/cloudflareCache'
+import { lexicalHTMLField } from '@payloadcms/richtext-lexical'
 
 /**
  * Products 集合的缓存策略
@@ -347,6 +349,10 @@ export const Products: CollectionConfig = {
         description: 'Additional product details and information',
       },
     },
+    lexicalHTMLField({
+      lexicalFieldName: 'details',
+      htmlFieldName: 'details_html',
+    }),
     {
       name: 'specification',
       type: 'richText',
@@ -355,6 +361,10 @@ export const Products: CollectionConfig = {
         description: 'Product specifications and technical details',
       },
     },
+    lexicalHTMLField({
+      lexicalFieldName: 'specification',
+      htmlFieldName: 'specification_html',
+    }),
     {
       name: 'downloads',
       type: 'array',
@@ -564,9 +574,9 @@ export const Products: CollectionConfig = {
       },
     ],
     // 在内容变更后清除 Cloudflare 缓存
-    afterChange: [purgeCacheAfterChange],
+    afterChange: [purgeCacheAfterChange, revalidateAfterChange],
     // 在内容删除后清除 Cloudflare 缓存
-    afterDelete: [purgeCacheAfterDelete],
+    afterDelete: [purgeCacheAfterDelete, revalidateAfterDelete],
   },
   access: {
     read: ({ req }) => {

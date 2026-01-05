@@ -8,8 +8,7 @@
   text-decoration: none;
   color: rgb(0, 0, 0);
   transition: all 0.3s ease;
-  height: fit-content;
-  align-self: start;
+  height: 100%;
 }
 
 .product-card:hover {
@@ -38,6 +37,9 @@
 
 .product-card-content {
   padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card-title {

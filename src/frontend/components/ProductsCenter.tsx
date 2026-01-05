@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import type { Category, Product } from '@/payload-types'
+import { useCategories } from '@/frontend/contexts/CategoriesContext'
 import { ProductCard } from './ProductCard'
 import './ProductsCenter.css'
 
@@ -14,30 +15,28 @@ interface CategoryData {
   subcategoryCounts: Record<number, number>
 }
 
-interface ApiResponse<T> {
-  docs?: T[]
-  totalDocs?: number
+interface ProductsCenterProps {
+  initialProducts: Product[]
 }
 
-export function ProductsCenter() {
+export function ProductsCenter({
+  initialProducts,
+}: ProductsCenterProps) {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
   const subcategoryParam = searchParams.get('subcategory')
   const router = useRouter()
+  const { mainCategories, allSubcategories } = useCategories()
 
-  // 简化状态管理
+  // 简化状态管理 - 使用 Context 中的分类数据
   const [data, setData] = useState<CategoryData>({
-    mainCategories: [],
+    mainCategories,
     subcategories: [],
-    products: [],
+    products: initialProducts,
     subcategoryCounts: {},
   })
-  const [loading, setLoading] = useState(true)
-  const [filterLoading, setFilterLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   
-  // 使用 AbortController 取消过期的请求
-  const abortControllerRef = useRef<AbortController | null>(null)
   const productsGridRef = useRef<HTMLDivElement>(null)
 
   // 从 URL 参数解析选中的分类
@@ -58,184 +57,77 @@ export function ProductsCenter() {
     [data.subcategories, selectedSubcategoryIds]
   )
 
-  // 并行加载所有数据
-  const loadData = useCallback(async (categoryId: number | null, subcategoryIds: number[]) => {
-    // 取消之前的请求
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-    
-    const controller = new AbortController()
-    abortControllerRef.current = controller
-    const signal = controller.signal
-
-    try {
-      setLoading(true)
-
-      // 1. 首次加载或需要刷新主分类列表
-      let mainCategories = data.mainCategories
-      if (mainCategories.length === 0) {
-        const mainCatResponse = await fetch(
-          '/api/categories?where[type][equals]=product-category&where[parent][exists]=false&limit=100&depth=0',
-          { signal }
-        )
-        if (!mainCatResponse.ok) throw new Error('Failed to fetch main categories')
-        const mainCatData = await mainCatResponse.json() as ApiResponse<Category>
-        mainCategories = mainCatData.docs || []
-        if (signal.aborted) return
-      }
-
-      // 2. 根据选中的分类决定加载什么
-      if (categoryId === null) {
-        // "All" 模式 - 只加载产品
-        const productsResponse = await fetch('/api/products?limit=100&depth=1', { signal })
-        if (!productsResponse.ok) throw new Error('Failed to fetch products')
-        const productsData = await productsResponse.json() as ApiResponse<Product>
-        
-        if (signal.aborted) return
-        
-        setData({
-          mainCategories,
-          subcategories: [],
-          products: productsData.docs || [],
-          subcategoryCounts: {},
-        })
-      } else {
-        // 选中了特定分类 - 并行加载子分类和产品
-        const [subcatResponse, productsResponse] = await Promise.all([
-          fetch(`/api/categories?where[parent][equals]=${categoryId}&limit=100&depth=0`, { signal }),
-          fetch(`/api/products?where[mainCategory][equals]=${categoryId}&limit=1000&depth=1`, { signal })
-        ])
-
-        if (!subcatResponse.ok || !productsResponse.ok) {
-          throw new Error('Failed to fetch data')
-        }
-
-        const [subcatData, productsData] = await Promise.all([
-          subcatResponse.json() as Promise<ApiResponse<Category>>,
-          productsResponse.json() as Promise<ApiResponse<Product>>
-        ])
-
-        if (signal.aborted) return
-
-        const subcategories = subcatData.docs || []
-        const allProducts = productsData.docs || []
-
-        // 3. 如果有子分类，计算每个子分类的产品数量（客户端计算，避免多次请求）
-        const subcategoryCounts: Record<number, number> = {}
-        if (subcategories.length > 0) {
-          subcategories.forEach((subcat: Category) => {
-            subcategoryCounts[subcat.id] = allProducts.filter((product: Product) => {
-              if (!product.categories || !Array.isArray(product.categories)) return false
-              return product.categories.some(catId => 
-                (typeof catId === 'number' ? catId : Number(catId)) === subcat.id
-              )
-            }).length
-          })
-        }
-
-        // 4. 过滤产品（如果选中了子分类）
-        let filteredProducts = allProducts
-        if (subcategoryIds.length > 0) {
-          const selectedIdsSet = new Set(subcategoryIds)
-          filteredProducts = allProducts.filter((product: Product) => {
-            if (!product.categories || !Array.isArray(product.categories)) return false
-            return product.categories.some(catId => 
-              selectedIdsSet.has(typeof catId === 'number' ? catId : Number(catId))
-            )
-          })
-        }
-
-        if (signal.aborted) return
-
-        setData({
-          mainCategories,
-          subcategories,
-          products: filteredProducts,
-          subcategoryCounts,
-        })
-      }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Request aborted')
-        return
-      }
-      console.error('Error loading data:', error)
-      // 出错时保持现有数据
-    } finally {
-      if (!signal.aborted) {
-        setLoading(false)
-      }
-    }
-  }, [data.mainCategories])
-
-  // 快速过滤产品（不重新加载）
-  const filterProducts = useCallback(async (categoryId: number, subcategoryIds: number[]) => {
-    if (subcategoryIds.length === 0) {
-      // 清除子分类过滤
-      setFilterLoading(true)
-      try {
-        const response = await fetch(`/api/products?where[mainCategory][equals]=${categoryId}&limit=1000&depth=1`)
-        if (!response.ok) throw new Error('Failed to fetch products')
-        const productsData = await response.json() as ApiResponse<Product>
-        
-        setData(prev => ({
-          ...prev,
-          products: productsData.docs || []
-        }))
-      } catch (error) {
-        console.error('Error filtering products:', error)
-      } finally {
-        setFilterLoading(false)
-      }
+  // 基于初始数据进行客户端筛选（即时筛选，无需加载状态）
+  const filterData = useCallback((categoryId: number | null, subcategoryIds: number[]) => {
+    if (categoryId === null) {
+      // "All" 模式 - 显示所有产品
+      setData({
+        mainCategories,
+        subcategories: [],
+        products: initialProducts,
+        subcategoryCounts: {},
+      })
     } else {
-      // 使用已有数据进行客户端过滤
-      setFilterLoading(true)
-      // 使用 setTimeout 让 UI 有时间显示加载状态
-      setTimeout(() => {
-        const selectedIdsSet = new Set(subcategoryIds)
-        const filteredProducts = data.products.filter((product: Product) => {
-          if (!product.categories || !Array.isArray(product.categories)) {
-            // 如果当前 products 已经是过滤后的，我们需要从完整列表过滤
-            // 这里简化处理，直接返回 false
-            return false
-          }
-          return product.categories.some(catId => 
-            selectedIdsSet.has(typeof catId === 'number' ? catId : Number(catId))
-          )
+      // 筛选该分类下的子分类
+      const subcategories = allSubcategories.filter(
+        (cat) => {
+          const parentId = typeof cat.parent === 'object' ? cat.parent?.id : cat.parent
+          return parentId === categoryId
+        }
+      )
+
+      // 筛选该分类下的产品
+      const categoryProducts = initialProducts.filter((product) => {
+        const mainCatId = typeof product.mainCategory === 'object' 
+          ? product.mainCategory?.id 
+          : product.mainCategory
+        return mainCatId === categoryId
+      })
+
+      // 计算每个子分类的产品数量
+      const subcategoryCounts: Record<number, number> = {}
+      if (subcategories.length > 0) {
+        subcategories.forEach((subcat) => {
+          subcategoryCounts[subcat.id] = categoryProducts.filter((product) => {
+            if (!product.categories || !Array.isArray(product.categories)) return false
+            return product.categories.some(catId => {
+              const id = typeof catId === 'object' ? catId.id : catId
+              return id === subcat.id
+            })
+          }).length
         })
-        
-        setData(prev => ({
-          ...prev,
-          products: filteredProducts
-        }))
-        setFilterLoading(false)
-      }, 100)
-    }
-  }, [data.products])
+      }
 
-  // 初始加载和分类切换
-  useEffect(() => {
-    loadData(selectedCategoryId, selectedSubcategoryIds)
-  }, [selectedCategoryId]) // 只在分类 ID 改变时重新加载
+      // 如果选中了子分类，进一步筛选产品
+      let filteredProducts = categoryProducts
+      if (subcategoryIds.length > 0) {
+        const selectedIdsSet = new Set(subcategoryIds)
+        filteredProducts = categoryProducts.filter((product) => {
+          if (!product.categories || !Array.isArray(product.categories)) return false
+          return product.categories.some(catId => {
+            const id = typeof catId === 'object' ? catId.id : catId
+            return selectedIdsSet.has(id)
+          })
+        })
+      }
 
-  // 子分类过滤（快速）
-  const previousSubcategoryIds = useRef<number[]>(selectedSubcategoryIds)
-  useEffect(() => {
-    // 检查子分类是否真的改变了
-    const idsChanged = JSON.stringify(previousSubcategoryIds.current.sort()) !== 
-                       JSON.stringify(selectedSubcategoryIds.sort())
-    
-    if (idsChanged && selectedCategoryId !== null && !loading) {
-      filterProducts(selectedCategoryId, selectedSubcategoryIds)
-      previousSubcategoryIds.current = selectedSubcategoryIds
+      setData({
+        mainCategories,
+        subcategories,
+        products: filteredProducts,
+        subcategoryCounts,
+      })
     }
-  }, [selectedSubcategoryIds, selectedCategoryId, loading, filterProducts])
+  }, [mainCategories, initialProducts, allSubcategories])
+
+  // 当分类或子分类改变时重新筛选数据
+  useEffect(() => {
+    filterData(selectedCategoryId, selectedSubcategoryIds)
+  }, [selectedCategoryId, selectedSubcategoryIds, filterData])
 
   // 分类点击处理
   const handleCategoryClick = useCallback((category: Category | null, e: React.MouseEvent) => {
     e.preventDefault()
-    if (loading) return
 
     const newUrl = category ? `/products?category=${category.id}` : '/products'
     router.push(newUrl, { scroll: false })
@@ -245,7 +137,7 @@ export function ProductsCenter() {
       productsGridRef.current.scrollTop = 0
     }
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [loading, router])
+  }, [router])
 
   // 子分类切换处理
   const handleSubcategoryToggle = useCallback((subcategory: Category) => {
@@ -323,37 +215,31 @@ export function ProductsCenter() {
         <div className="products-center-left">
           <div className="products-center-categories-list">
             <h2 className="categories-title">Categories</h2>
-            {loading && data.mainCategories.length === 0 ? (
-              <div className="loading">Loading...</div>
-            ) : (
-              <>
-                {/* All 选项 */}
-                <div className={`products-center-category-item ${selectedCategory === null ? 'active' : ''}`}>
-                  <Link
-                    href="/products"
-                    className="products-center-category-link"
-                    onClick={(e) => handleCategoryClick(null, e)}
-                  >
-                    All
-                  </Link>
-                </div>
-                {/* 分类列表 */}
-                {data.mainCategories.map((category) => (
-                  <div
-                    key={category.id}
-                    className={`products-center-category-item ${selectedCategory?.id === category.id ? 'active' : ''}`}
-                  >
-                    <Link
-                      href={`/products?category=${category.id}`}
-                      className="products-center-category-link"
-                      onClick={(e) => handleCategoryClick(category, e)}
-                    >
-                      {category.name}
-                    </Link>
-                  </div>
-                ))}
-              </>
-            )}
+            {/* All 选项 */}
+            <div className={`products-center-category-item ${selectedCategory === null ? 'active' : ''}`}>
+              <Link
+                href="/products"
+                className="products-center-category-link"
+                onClick={(e) => handleCategoryClick(null, e)}
+              >
+                All
+              </Link>
+            </div>
+            {/* 分类列表 */}
+            {data.mainCategories.map((category) => (
+              <div
+                key={category.id}
+                className={`products-center-category-item ${selectedCategory?.id === category.id ? 'active' : ''}`}
+              >
+                <Link
+                  href={`/products?category=${category.id}`}
+                  className="products-center-category-link"
+                  onClick={(e) => handleCategoryClick(category, e)}
+                >
+                  {category.name}
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -361,13 +247,6 @@ export function ProductsCenter() {
         <div className="products-center-right">
           <div className="products-center-content">
             <div className="products-center-content-wrapper">
-              {/* 加载遮罩 */}
-              {loading && (
-                <div className="products-center-category-overlay">
-                  <div className="products-center-category-spinner"></div>
-                </div>
-              )}
-
               {/* 产品列表 */}
               <div className="products-center-products-section">
                 <div className="products-center-products-header">
@@ -386,7 +265,7 @@ export function ProductsCenter() {
                 </div>
 
                 {/* 子分类过滤器 */}
-                {selectedCategory && !loading && data.subcategories.length > 0 && Object.keys(groupedSubcategories).length > 0 && (
+                {selectedCategory && data.subcategories.length > 0 && Object.keys(groupedSubcategories).length > 0 && (
                   <div className="products-center-subcategories-section">
                     <div className="products-center-subcategories-header">
                       <span className="products-center-subcategories-label">Filter:</span>
@@ -430,31 +309,22 @@ export function ProductsCenter() {
                 )}
 
                 {/* 产品网格 */}
-                {loading && data.products.length === 0 ? (
-                  <div className="loading">Loading products...</div>
-                ) : (
-                  <div className="products-center-products-grid-wrapper">
-                    {filterLoading && (
-                      <div className="products-center-filter-overlay">
-                        <div className="products-center-filter-spinner"></div>
-                      </div>
-                    )}
-                    {data.products.length > 0 ? (
-                      <div 
-                        className={`products-center-products-grid ${filterLoading ? 'filtering' : ''}`} 
-                        ref={productsGridRef}
-                      >
-                        {data.products.map((product) => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="products-center-products-empty">
-                        <p>No products found.</p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className="products-center-products-grid-wrapper">
+                  {data.products.length > 0 ? (
+                    <div 
+                      className="products-center-products-grid" 
+                      ref={productsGridRef}
+                    >
+                      {data.products.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="products-center-products-empty">
+                      <p>No products found.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

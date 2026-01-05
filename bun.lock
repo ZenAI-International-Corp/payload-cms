@@ -10,7 +10,6 @@
         "@payloadcms/richtext-lexical": "3.69.0",
         "@payloadcms/storage-r2": "3.69.0",
         "@payloadcms/ui": "3.69.0",
-        "@zapal/payload-lexical-react": "^1.8.0",
         "cross-env": "^7.0.3",
         "dotenv": "16.4.7",
         "graphql": "^16.8.1",
@@ -872,8 +871,6 @@
     "@vitest/spy": ["@vitest/spy@3.2.3", "https://registry.npmmirror.com/@vitest/spy/-/spy-3.2.3.tgz", { "dependencies": { "tinyspy": "^4.0.3" } }, "sha512-JHu9Wl+7bf6FEejTCREy+DmgWe+rQKbK+y32C/k5f4TBIAlijhJbRBIRIOCEpVevgRsCQR2iHRUH2/qKVM/plw=="],
 
     "@vitest/utils": ["@vitest/utils@3.2.3", "https://registry.npmmirror.com/@vitest/utils/-/utils-3.2.3.tgz", { "dependencies": { "@vitest/pretty-format": "3.2.3", "loupe": "^3.1.3", "tinyrainbow": "^2.0.0" } }, "sha512-4zFBCU5Pf+4Z6v+rwnZ1HU1yzOKKvDkMXZrymE2PBlbjKJRlrOxbvpfPSvJTGRIwGoahaOGvp+kbCoxifhzJ1Q=="],
-
-    "@zapal/payload-lexical-react": ["@zapal/payload-lexical-react@1.8.0", "https://registry.npmmirror.com/@zapal/payload-lexical-react/-/payload-lexical-react-1.8.0.tgz", { "peerDependencies": { "lexical": "^0.28.0", "react": "^19.0.0", "react-dom": "^19.0.0" } }, "sha512-iBIlA6g6wYEmb69KX9s0+pU13UXshp16COsiH1oX54u6uzdrcQx+fxuc8VjPbSDQBj3M6b/D+GRVa1Wn/2tEFg=="],
 
     "abort-controller": ["abort-controller@3.0.0", "https://registry.npmmirror.com/abort-controller/-/abort-controller-3.0.0.tgz", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 

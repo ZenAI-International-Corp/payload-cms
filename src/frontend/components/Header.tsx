@@ -2,13 +2,12 @@
 
 import React, { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useCategories } from '@/frontend/contexts/CategoriesContext'
 import { ProductsDropdown } from './ProductsDropdown'
 import './Header.css'
 
 export function Header() {
-  const pathname = usePathname()
-  const isProductsPage = pathname?.startsWith('/products')
+  const { mainCategories, allSubcategories } = useCategories()
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false)
   const productsNavRef = useRef<HTMLLIElement>(null)
   const dropdownContainerRef = useRef<HTMLDivElement>(null)
@@ -40,10 +39,9 @@ export function Header() {
   }, [clearCloseTimeout])
 
   const handleProductsMouseEnter = useCallback(() => {
-    if (isProductsPage) return // Don't show dropdown on products pages
     clearCloseTimeout()
     setProductsDropdownOpen(true)
-  }, [clearCloseTimeout, isProductsPage])
+  }, [clearCloseTimeout])
 
   const handleProductsMouseLeave = useCallback(() => {
     scheduleClose()
@@ -84,22 +82,20 @@ export function Header() {
           </ul>
         </nav>
       </div>
-      {!isProductsPage && (
-        <div
-          ref={dropdownContainerRef}
-          onMouseEnter={handleDropdownMouseEnter}
-          onMouseLeave={handleDropdownMouseLeave}
-        >
-          <ProductsDropdown
-            isOpen={productsDropdownOpen}
-            onClose={() => {
-              clearCloseTimeout()
-              setProductsDropdownOpen(false)
-            }}
-            triggerRef={productsNavRef}
-          />
-        </div>
-      )}
+      <div
+        ref={dropdownContainerRef}
+        onMouseEnter={handleDropdownMouseEnter}
+        onMouseLeave={handleDropdownMouseLeave}
+      >
+        <ProductsDropdown
+          isOpen={productsDropdownOpen}
+          onClose={() => {
+            clearCloseTimeout()
+            setProductsDropdownOpen(false)
+          }}
+          triggerRef={productsNavRef}
+        />
+      </div>
     </header>
   )
 }

@@ -1,5 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import {
   Mail,
   FileText,
@@ -16,7 +18,28 @@ import {
 import { CategoryGrid, FeaturedProducts } from '@/frontend/components'
 import './home.css'
 
-export default function HomePage() {
+// 设置重新验证时间（ISR）
+export const revalidate = 3600 // 1 hour
+
+// 生成页面元数据
+export const metadata = {
+  title: 'IDView - Digital Video Recording Solutions',
+  description: 'Professional Video Surveillance Equipment and Intelligent Security Solutions',
+}
+
+export default async function HomePage() {
+  const payload = await getPayload({ config })
+
+  // 只需预加载特色产品，分类数据从 Context 获取
+  const productsResult = await payload.find({
+    collection: 'products',
+    where: {
+      status: { equals: 'visible' },
+    },
+    limit: 6,
+    depth: 1,
+    sort: '-createdAt',
+  })
   return (
     <div className="home-page">
       {/* Hero Section */}
@@ -52,7 +75,7 @@ export default function HomePage() {
       <CategoryGrid />
 
       {/* Featured Products */}
-      <FeaturedProducts />
+      <FeaturedProducts initialProducts={productsResult.docs} />
 
       {/* About IDView */}
       <section className="about-section">

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { purgeCacheAfterChange, purgeCacheAfterDelete } from '../payload/hooks/purgeCacheAfterChange'
+import { revalidateAfterChange, revalidateAfterDelete } from '../payload/hooks/revalidateAfterChange'
 import type { CollectionCacheStrategy } from '../payload/utils/cloudflareCache'
 
 /**
@@ -132,9 +133,9 @@ export const Categories: CollectionConfig = {
       },
     ],
     // 在内容变更后清除 Cloudflare 缓存
-    afterChange: [purgeCacheAfterChange],
+    afterChange: [purgeCacheAfterChange, revalidateAfterChange],
     // 在内容删除后清除 Cloudflare 缓存
-    afterDelete: [purgeCacheAfterDelete],
+    afterDelete: [purgeCacheAfterDelete, revalidateAfterDelete],
   },
   access: {
     read: () => true,

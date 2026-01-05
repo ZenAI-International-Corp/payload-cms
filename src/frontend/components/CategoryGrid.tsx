@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import type { Category, Media } from '@/payload-types'
+import { useCategories } from '@/frontend/contexts/CategoriesContext'
 
 // 分类显示配置 - 将数据库分类映射到首页展示
 // image 和 description 作为后备值，优先使用数据库中存储的值
@@ -44,60 +45,15 @@ const categoryDisplayConfig: Record<string, {
   },
 }
 
-interface ApiResponse {
-  docs: Category[]
-  totalDocs: number
-}
-
 export function CategoryGrid() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(
-          '/api/categories?where[type][equals]=product-category&where[parent][exists]=false&limit=100&depth=1'
-        )
-        const data = await response.json() as ApiResponse
-        const mainCategories = data.docs || []
-        
-        // 过滤出要在首页显示的分类，并按配置顺序排列
-        const displayCategories = Object.keys(categoryDisplayConfig)
-          .map(name => mainCategories.find((cat: Category) => cat.name === name))
-          .filter((cat): cat is Category => cat !== undefined)
-        
-        setCategories(displayCategories)
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCategories()
-  }, [])
-
-  if (loading) {
-    return (
-      <section className="categories-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Core Product Categories</h2>
-            <div className="section-underline"></div>
-            <p className="section-description">
-              Comprehensive security hardware for every surveillance need.
-            </p>
-          </div>
-          <div className="categories-grid">
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-              Loading categories...
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
+  const { mainCategories } = useCategories()
+  
+  // 过滤出要在首页显示的分类，并按配置顺序排列
+  const categories = useMemo(() => {
+    return Object.keys(categoryDisplayConfig)
+      .map(name => mainCategories.find((cat: Category) => cat.name === name))
+      .filter((cat): cat is Category => cat !== undefined)
+  }, [mainCategories])
 
   return (
     <section className="categories-section">

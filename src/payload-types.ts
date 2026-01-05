@@ -301,6 +301,7 @@ export interface Product {
     };
     [k: string]: unknown;
   } | null;
+  details_html?: string | null;
   /**
    * Product specifications and technical details
    */
@@ -319,6 +320,7 @@ export interface Product {
     };
     [k: string]: unknown;
   } | null;
+  specification_html?: string | null;
   /**
    * Upload PDF files, datasheets, manuals, etc.
    */
@@ -516,7 +518,9 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   categories?: T;
   details?: T;
+  details_html?: T;
   specification?: T;
+  specification_html?: T;
   downloads?:
     | T
     | {

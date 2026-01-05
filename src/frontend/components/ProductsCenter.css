@@ -447,14 +447,13 @@
 .products-center-products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  grid-auto-rows: max-content;
+  grid-auto-rows: 1fr;
   gap: 24px;
   overflow-y: auto;
   flex: 1;
   scrollbar-width: thin;
   scrollbar-color: rgb(204, 204, 204) transparent;
   padding: 4px 8px 0 0;
-  align-items: start;
   align-content: start;
   min-height: 400px;
   transition: opacity 0.2s ease;

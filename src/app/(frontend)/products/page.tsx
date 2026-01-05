@@ -1,11 +1,35 @@
-import React, { Suspense } from 'react'
+import React from 'react'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { ProductsCenter } from '@/frontend/components'
 
-export default function ProductsPage() {
+// 设置重新验证时间（ISR）
+export const revalidate = 3600 // 1 hour
+
+// 生成页面元数据
+export const metadata = {
+  title: 'Products - All Products',
+  description: 'Browse all our products',
+}
+
+// 服务器组件 - 预加载产品数据（分类数据从 Context 获取）
+export default async function ProductsPage() {
+  const payload = await getPayload({ config })
+
+  // 只需预加载所有产品，分类数据从 Context 获取
+  const productsResult = await payload.find({
+    collection: 'products',
+    where: {
+      status: { equals: 'visible' },
+    },
+    limit: 1000,
+    depth: 1,
+  })
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ProductsCenter />
-    </Suspense>
+    <ProductsCenter
+      initialProducts={productsResult.docs}
+    />
   )
 }
 
