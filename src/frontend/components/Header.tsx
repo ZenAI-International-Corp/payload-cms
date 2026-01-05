@@ -2,12 +2,10 @@
 
 import React, { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { useCategories } from '@/frontend/contexts/CategoriesContext'
 import { ProductsDropdown } from './ProductsDropdown'
 import './Header.css'
 
 export function Header() {
-  const { mainCategories, allSubcategories } = useCategories()
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false)
   const productsNavRef = useRef<HTMLLIElement>(null)
   const dropdownContainerRef = useRef<HTMLDivElement>(null)

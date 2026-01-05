@@ -5,12 +5,13 @@
  */
 
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
+import type { Product, Category } from '@/payload-types'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 /**
  * 重新验证产品相关的页面
  */
-async function revalidateProductPages(doc: any, operation: 'create' | 'update' | 'delete') {
+async function revalidateProductPages(doc: Product, operation: 'create' | 'update' | 'delete') {
   try {
     console.log(`[Revalidate] Starting revalidation for product: ${doc.slug || doc.id}`)
 
@@ -34,7 +35,6 @@ async function revalidateProductPages(doc: any, operation: 'create' | 'update' |
 
     // 重新验证分类页面（如果产品有分类）
     if (doc.mainCategory) {
-      const categoryId = typeof doc.mainCategory === 'object' ? doc.mainCategory.id : doc.mainCategory
       revalidatePath('/products/category', 'page')
       console.log(`[Revalidate] ✓ Category pages`)
     }
@@ -52,7 +52,7 @@ async function revalidateProductPages(doc: any, operation: 'create' | 'update' |
 /**
  * 重新验证分类相关的页面
  */
-async function revalidateCategoryPages(doc: any, operation: 'create' | 'update' | 'delete') {
+async function revalidateCategoryPages(doc: Category, _operation: 'create' | 'update' | 'delete') {
   try {
     console.log(`[Revalidate] Starting revalidation for category: ${doc.slug || doc.id}`)
 
@@ -84,7 +84,6 @@ async function revalidateCategoryPages(doc: any, operation: 'create' | 'update' 
  */
 export const revalidateAfterChange: CollectionAfterChangeHook = async ({
   doc,
-  req,
   operation,
   collection,
   context,
@@ -116,7 +115,6 @@ export const revalidateAfterChange: CollectionAfterChangeHook = async ({
  */
 export const revalidateAfterDelete: CollectionAfterDeleteHook = async ({
   doc,
-  req,
   collection,
   context,
 }) => {

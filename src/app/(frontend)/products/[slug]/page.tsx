@@ -1,8 +1,7 @@
 import React from 'react'
-import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { Product, Category } from '@/payload-types'
+import type { Category } from '@/payload-types'
 import { ProductDetail } from '@/frontend/components'
 import { notFound } from 'next/navigation'
 
@@ -28,13 +27,14 @@ export async function generateStaticParams() {
 export const revalidate = 3600 // 1 hour
 
 // 生成页面元数据
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const payload = await getPayload({ config })
   
   const result = await payload.find({
     collection: 'products',
     where: {
-      slug: { equals: params.slug },
+      slug: { equals: slug },
       status: { equals: 'visible' },
     },
     limit: 1,
@@ -56,14 +56,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // 服务器组件 - 在服务器端获取数据
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const payload = await getPayload({ config })
 
   // 获取产品数据
   const result = await payload.find({
     collection: 'products',
     where: {
-      slug: { equals: params.slug },
+      slug: { equals: slug },
       status: { equals: 'visible' },
     },
     limit: 1,

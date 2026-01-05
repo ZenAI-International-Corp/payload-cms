@@ -12,7 +12,6 @@ import { purgeCollectionCache } from '../utils/cloudflareCache'
  */
 export const purgeCacheAfterChange: CollectionAfterChangeHook = async ({
   doc,
-  req,
   operation,
   collection,
   context,
@@ -40,7 +39,6 @@ export const purgeCacheAfterChange: CollectionAfterChangeHook = async ({
  */
 export const purgeCacheAfterDelete: CollectionAfterDeleteHook = async ({
   doc,
-  req,
   collection,
   context,
 }) => {
