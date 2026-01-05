@@ -2,6 +2,9 @@
  * Payload Hook: 在内容变更后重新验证 Next.js 静态页面
  * 
  * 此 hook 负责在内容更新时触发 ISR (Incremental Static Regeneration)
+ * 
+ * 注意：在 Cloudflare Workers 环境中，revalidatePath/revalidateTag 不可用
+ * 此时我们依赖 Cloudflare 的 Cache-Tag 清除机制（见 purgeCacheAfterChange.ts）
  */
 
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
@@ -9,38 +12,92 @@ import type { Product, Category } from '@/payload-types'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 /**
+ * 检测是否在 Cloudflare Workers 环境中运行
+ */
+function isCloudflareWorkers(): boolean {
+  // Cloudflare Workers 不支持 process.versions
+  return typeof process.versions === 'undefined' || 
+         typeof process.env.CF_PAGES !== 'undefined' ||
+         typeof (globalThis as any).ASSETS !== 'undefined'
+}
+
+/**
+ * 安全地调用 revalidatePath（在 Workers 环境中跳过）
+ */
+function safeRevalidatePath(path: string, type?: 'page' | 'layout'): void {
+  if (isCloudflareWorkers()) {
+    // 在 Workers 环境中，使用 Cache-Tag purging 代替
+    // console.log(`[Revalidate] Skipped in Workers: ${path}`)
+    return
+  }
+  
+  try {
+    if (type) {
+      revalidatePath(path, type)
+    } else {
+      revalidatePath(path)
+    }
+  } catch (error) {
+    console.error(`[Revalidate] Error revalidating path ${path}:`, error)
+  }
+}
+
+/**
+ * 安全地调用 revalidateTag（在 Workers 环境中跳过）
+ */
+function safeRevalidateTag(tag: string): void {
+  if (isCloudflareWorkers()) {
+    // 在 Workers 环境中，使用 Cache-Tag purging 代替
+    // console.log(`[Revalidate] Skipped in Workers: tag ${tag}`)
+    return
+  }
+  
+  try {
+    revalidateTag(tag)
+  } catch (error) {
+    console.error(`[Revalidate] Error revalidating tag ${tag}:`, error)
+  }
+}
+
+/**
  * 重新验证产品相关的页面
  */
 async function revalidateProductPages(doc: Product, operation: 'create' | 'update' | 'delete') {
   try {
+    if (isCloudflareWorkers()) {
+      // 在 Workers 环境中，缓存清除由 purgeCacheAfterChange hook 处理
+      console.log(`[Revalidate] Running in Workers environment, using Cache-Tag purging instead`)
+      return
+    }
+
     console.log(`[Revalidate] Starting revalidation for product: ${doc.slug || doc.id}`)
 
     // 重新验证首页（包含特色产品）
-    revalidatePath('/', 'page')
+    safeRevalidatePath('/', 'page')
     console.log(`[Revalidate] ✓ Home page`)
 
     // 重新验证产品列表页
-    revalidatePath('/products', 'page')
+    safeRevalidatePath('/products', 'page')
     console.log(`[Revalidate] ✓ Products list`)
 
     // 重新验证产品搜索页
-    revalidatePath('/products/search', 'page')
+    safeRevalidatePath('/products/search', 'page')
     console.log(`[Revalidate] ✓ Products search`)
 
     // 如果是更新或删除操作，重新验证产品详情页
     if (operation === 'update' && doc.slug) {
-      revalidatePath(`/products/${doc.slug}`, 'page')
+      safeRevalidatePath(`/products/${doc.slug}`, 'page')
       console.log(`[Revalidate] ✓ Product detail: /products/${doc.slug}`)
     }
 
     // 重新验证分类页面（如果产品有分类）
     if (doc.mainCategory) {
-      revalidatePath('/products/category', 'page')
+      safeRevalidatePath('/products/category', 'page')
       console.log(`[Revalidate] ✓ Category pages`)
     }
 
     // 使用 tag 重新验证所有产品相关页面
-    revalidateTag('products')
+    safeRevalidateTag('products')
     console.log(`[Revalidate] ✓ All pages with 'products' tag`)
 
     console.log(`[Revalidate] Completed for product: ${doc.slug || doc.id}`)
@@ -54,23 +111,29 @@ async function revalidateProductPages(doc: Product, operation: 'create' | 'updat
  */
 async function revalidateCategoryPages(doc: Category, _operation: 'create' | 'update' | 'delete') {
   try {
+    if (isCloudflareWorkers()) {
+      // 在 Workers 环境中，缓存清除由 purgeCacheAfterChange hook 处理
+      console.log(`[Revalidate] Running in Workers environment, using Cache-Tag purging instead`)
+      return
+    }
+
     console.log(`[Revalidate] Starting revalidation for category: ${doc.slug || doc.id}`)
 
     // 重新验证首页
-    revalidatePath('/', 'page')
+    safeRevalidatePath('/', 'page')
     console.log(`[Revalidate] ✓ Home page`)
 
     // 重新验证产品列表页
-    revalidatePath('/products', 'page')
+    safeRevalidatePath('/products', 'page')
     console.log(`[Revalidate] ✓ Products list`)
 
     // 重新验证分类页面
-    revalidatePath('/products/category', 'page')
+    safeRevalidatePath('/products/category', 'page')
     console.log(`[Revalidate] ✓ Category pages`)
 
     // 使用 tag 重新验证
-    revalidateTag('categories')
-    revalidateTag('products')
+    safeRevalidateTag('categories')
+    safeRevalidateTag('products')
     console.log(`[Revalidate] ✓ All category and product tags`)
 
     console.log(`[Revalidate] Completed for category: ${doc.slug || doc.id}`)
