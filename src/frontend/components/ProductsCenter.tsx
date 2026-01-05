@@ -1,145 +1,72 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import React, { useState, useMemo, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import type { Category, Product } from '@/payload-types'
 import { useCategories } from '@/frontend/contexts/CategoriesContext'
 import { ProductCard } from './ProductCard'
 import './ProductsCenter.css'
 
-interface CategoryData {
-  mainCategories: Category[]
-  subcategories: Category[]
-  products: Product[]
-  subcategoryCounts: Record<number, number>
-}
-
 interface ProductsCenterProps {
   initialProducts: Product[]
+  selectedCategoryId: number | null
+  selectedSubcategoryIds: number[]
 }
 
 export function ProductsCenter({
   initialProducts,
+  selectedCategoryId,
+  selectedSubcategoryIds,
 }: ProductsCenterProps) {
-  const searchParams = useSearchParams()
-  const categoryParam = searchParams.get('category')
-  const subcategoryParam = searchParams.get('subcategory')
   const router = useRouter()
   const { mainCategories, allSubcategories } = useCategories()
-
-  // 简化状态管理 - 使用 Context 中的分类数据
-  const [data, setData] = useState<CategoryData>({
-    mainCategories,
-    subcategories: [],
-    products: initialProducts,
-    subcategoryCounts: {},
-  })
   const [searchQuery, setSearchQuery] = useState('')
-  
   const productsGridRef = useRef<HTMLDivElement>(null)
 
-  // 从 URL 参数解析选中的分类
-  const selectedCategoryId = categoryParam ? Number(categoryParam) : null
-  const selectedSubcategoryIds = useMemo(() => {
-    if (!subcategoryParam) return []
-    return subcategoryParam.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id))
-  }, [subcategoryParam])
+  // 获取当前分类的子分类
+  const subcategories = useMemo(() => {
+    if (selectedCategoryId === null) return []
+    return allSubcategories.filter(cat => {
+      const parentId = typeof cat.parent === 'object' ? cat.parent?.id : cat.parent
+      return parentId === selectedCategoryId
+    })
+  }, [selectedCategoryId, allSubcategories])
 
-  // 从数据中获取选中的分类对象
+  // 获取选中的分类对象
   const selectedCategory = useMemo(() => 
-    data.mainCategories.find(cat => cat.id === selectedCategoryId) || null,
-    [data.mainCategories, selectedCategoryId]
+    mainCategories.find(cat => cat.id === selectedCategoryId) || null,
+    [mainCategories, selectedCategoryId]
   )
 
   const selectedSubcategories = useMemo(() => 
-    data.subcategories.filter(cat => selectedSubcategoryIds.includes(cat.id)),
-    [data.subcategories, selectedSubcategoryIds]
+    subcategories.filter(cat => selectedSubcategoryIds.includes(cat.id)),
+    [subcategories, selectedSubcategoryIds]
   )
 
-  // 基于初始数据进行客户端筛选（即时筛选，无需加载状态）
-  const filterData = useCallback((categoryId: number | null, subcategoryIds: number[]) => {
-    if (categoryId === null) {
-      // "All" 模式 - 显示所有产品
-      setData({
-        mainCategories,
-        subcategories: [],
-        products: initialProducts,
-        subcategoryCounts: {},
-      })
-    } else {
-      // 筛选该分类下的子分类
-      const subcategories = allSubcategories.filter(
-        (cat) => {
-          const parentId = typeof cat.parent === 'object' ? cat.parent?.id : cat.parent
-          return parentId === categoryId
-        }
-      )
-
-      // 筛选该分类下的产品
-      const categoryProducts = initialProducts.filter((product) => {
-        const mainCatId = typeof product.mainCategory === 'object' 
-          ? product.mainCategory?.id 
-          : product.mainCategory
-        return mainCatId === categoryId
-      })
-
-      // 计算每个子分类的产品数量
-      const subcategoryCounts: Record<number, number> = {}
-      if (subcategories.length > 0) {
-        subcategories.forEach((subcat) => {
-          subcategoryCounts[subcat.id] = categoryProducts.filter((product) => {
-            if (!product.categories || !Array.isArray(product.categories)) return false
-            return product.categories.some(catId => {
-              const id = typeof catId === 'object' ? catId.id : catId
-              return id === subcat.id
-            })
-          }).length
+  // 计算每个子分类的产品数量（用于显示计数）
+  const subcategoryCounts = useMemo(() => {
+    const counts: Record<number, number> = {}
+    subcategories.forEach((subcat) => {
+      counts[subcat.id] = initialProducts.filter((product) => {
+        if (!product.categories || !Array.isArray(product.categories)) return false
+        return product.categories.some(catId => {
+          const id = typeof catId === 'object' ? catId.id : catId
+          return id === subcat.id
         })
-      }
+      }).length
+    })
+    return counts
+  }, [subcategories, initialProducts])
 
-      // 如果选中了子分类，进一步筛选产品
-      let filteredProducts = categoryProducts
-      if (subcategoryIds.length > 0) {
-        const selectedIdsSet = new Set(subcategoryIds)
-        filteredProducts = categoryProducts.filter((product) => {
-          if (!product.categories || !Array.isArray(product.categories)) return false
-          return product.categories.some(catId => {
-            const id = typeof catId === 'object' ? catId.id : catId
-            return selectedIdsSet.has(id)
-          })
-        })
-      }
-
-      setData({
-        mainCategories,
-        subcategories,
-        products: filteredProducts,
-        subcategoryCounts,
-      })
-    }
-  }, [mainCategories, initialProducts, allSubcategories])
-
-  // 当分类或子分类改变时重新筛选数据
-  useEffect(() => {
-    filterData(selectedCategoryId, selectedSubcategoryIds)
-  }, [selectedCategoryId, selectedSubcategoryIds, filterData])
-
-  // 分类点击处理
+  // 分类点击处理 - 导航到新 URL，服务器端重新筛选数据
   const handleCategoryClick = useCallback((category: Category | null, e: React.MouseEvent) => {
     e.preventDefault()
-
     const newUrl = category ? `/products?category=${category.id}` : '/products'
-    router.push(newUrl, { scroll: false })
-    
-    // 滚动到顶部
-    if (productsGridRef.current) {
-      productsGridRef.current.scrollTop = 0
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    router.push(newUrl)
   }, [router])
 
-  // 子分类切换处理
+  // 子分类切换处理 - 导航到新 URL，服务器端重新筛选数据
   const handleSubcategoryToggle = useCallback((subcategory: Category) => {
     if (!selectedCategoryId) return
 
@@ -152,13 +79,13 @@ export function ProductsCenter({
       ? `/products?category=${selectedCategoryId}`
       : `/products?category=${selectedCategoryId}&subcategory=${newIds.join(',')}`
     
-    router.push(newUrl, { scroll: false })
+    router.push(newUrl)
   }, [selectedCategoryId, selectedSubcategoryIds, router])
 
-  // 清除所有子分类过滤
+  // 清除所有子分类过滤 - 导航回主分类页面
   const handleClearAll = useCallback(() => {
     if (!selectedCategoryId) return
-    router.push(`/products?category=${selectedCategoryId}`, { scroll: false })
+    router.push(`/products?category=${selectedCategoryId}`)
   }, [selectedCategoryId, router])
 
   // 搜索处理
@@ -171,10 +98,10 @@ export function ProductsCenter({
 
   // 按类型分组子分类
   const groupedSubcategories = useMemo(() => {
-    if (!data.subcategories.length) return {}
+    if (!subcategories.length) return {}
 
     const grouped: Record<string, Category[]> = {}
-    data.subcategories.forEach((subcategory) => {
+    subcategories.forEach((subcategory) => {
       const type = subcategory.type || 'other'
       if (!grouped[type]) {
         grouped[type] = []
@@ -183,7 +110,7 @@ export function ProductsCenter({
     })
 
     return grouped
-  }, [data.subcategories])
+  }, [subcategories])
 
   // 格式化类型名称
   const formatTypeName = (type: string): string => {
@@ -226,7 +153,7 @@ export function ProductsCenter({
               </Link>
             </div>
             {/* 分类列表 */}
-            {data.mainCategories.map((category) => (
+            {mainCategories.map((category) => (
               <div
                 key={category.id}
                 className={`products-center-category-item ${selectedCategory?.id === category.id ? 'active' : ''}`}
@@ -260,12 +187,12 @@ export function ProductsCenter({
                       : 'All Products'}
                   </h2>
                   <p className="products-center-products-count">
-                    {data.products.length} product{data.products.length !== 1 ? 's' : ''}
+                    {initialProducts.length} product{initialProducts.length !== 1 ? 's' : ''}
                   </p>
                 </div>
 
                 {/* 子分类过滤器 */}
-                {selectedCategory && data.subcategories.length > 0 && Object.keys(groupedSubcategories).length > 0 && (
+                {selectedCategory && subcategories.length > 0 && Object.keys(groupedSubcategories).length > 0 && (
                   <div className="products-center-subcategories-section">
                     <div className="products-center-subcategories-header">
                       <span className="products-center-subcategories-label">Filter:</span>
@@ -282,7 +209,7 @@ export function ProductsCenter({
                           <div className="products-center-subcategory-group-items">
                             {items.map((subcategory) => {
                               const isSelected = selectedSubcategoryIds.includes(subcategory.id)
-                              const count = data.subcategoryCounts[subcategory.id] || 0
+                              const count = subcategoryCounts[subcategory.id] || 0
                               return (
                                 <label
                                   key={subcategory.id}
@@ -310,12 +237,12 @@ export function ProductsCenter({
 
                 {/* 产品网格 */}
                 <div className="products-center-products-grid-wrapper">
-                  {data.products.length > 0 ? (
+                  {initialProducts.length > 0 ? (
                     <div 
                       className="products-center-products-grid" 
                       ref={productsGridRef}
                     >
-                      {data.products.map((product) => (
+                      {initialProducts.map((product) => (
                         <ProductCard key={product.id} product={product} />
                       ))}
                     </div>

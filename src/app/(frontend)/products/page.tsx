@@ -13,16 +13,39 @@ export const metadata = {
   description: 'Browse all our products',
 }
 
-// 服务器组件 - 预加载产品数据（分类数据从 Context 获取）
-export default async function ProductsPage() {
+// 服务器组件 - 根据 URL 参数在服务器端筛选产品
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; subcategory?: string }>
+}) {
+  const params = await searchParams
+  const categoryId = params.category ? Number(params.category) : null
+  const subcategoryIds = params.subcategory
+    ? params.subcategory.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id))
+    : []
+
   const payload = await getPayload({ config })
 
-  // 只需预加载所有产品，分类数据从 Context 获取
+  // 构建查询条件
+  const where: any = {
+    status: { equals: 'visible' },
+  }
+
+  // 如果有分类筛选
+  if (categoryId !== null) {
+    where.mainCategory = { equals: categoryId }
+  }
+
+  // 如果有子分类筛选
+  if (subcategoryIds.length > 0) {
+    where.categories = { in: subcategoryIds }
+  }
+
+  // 服务器端查询已筛选的产品
   const productsResult = await payload.find({
     collection: 'products',
-    where: {
-      status: { equals: 'visible' },
-    },
+    where,
     limit: 1000,
     depth: 1,
   })
@@ -30,6 +53,8 @@ export default async function ProductsPage() {
   return (
     <ProductsCenter
       initialProducts={productsResult.docs}
+      selectedCategoryId={categoryId}
+      selectedSubcategoryIds={subcategoryIds}
     />
   )
 }
