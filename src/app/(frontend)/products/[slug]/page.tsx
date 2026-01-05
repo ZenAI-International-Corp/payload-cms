@@ -5,26 +5,9 @@ import type { Category } from '@/payload-types'
 import { ProductDetail } from '@/frontend/components'
 import { notFound } from 'next/navigation'
 
-// 生成静态参数 - 为所有产品生成静态页面
-export async function generateStaticParams() {
-  const payload = await getPayload({ config })
-  
-  const products = await payload.find({
-    collection: 'products',
-    limit: 1000,
-    depth: 0,
-    where: {
-      status: { equals: 'visible' },
-    },
-  })
-
-  return products.docs.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
-// 设置重新验证时间（ISR）
+// 启用 ISR - 页面将在首次访问时生成，然后每小时重新验证
 export const revalidate = 3600 // 1 hour
+export const dynamicParams = true // 允许动态生成未预渲染的页面
 
 // 生成页面元数据
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
