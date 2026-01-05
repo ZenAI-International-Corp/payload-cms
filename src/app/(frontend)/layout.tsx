@@ -25,7 +25,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       parent: { exists: false },
     },
     limit: 100,
-    depth: 0,
+    depth: 1,
   })
 
   // 预加载所有子分类（用于下拉菜单和页面使用）
@@ -35,7 +35,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       parent: { exists: true },
     },
     limit: 1000,
-    depth: 0,
+    depth: 1,
   })
 
   return (
