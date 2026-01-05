@@ -4,8 +4,8 @@ import config from '@payload-config'
 import { ProductsCenter } from '@/frontend/components'
 
 // 动态渲染配置
+// 在 Cloudflare Workers 中，缓存由 middleware.ts 的 Cache-Control 头控制
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // ISR: 1 hour
 
 // 生成页面元数据
 export const metadata = {
