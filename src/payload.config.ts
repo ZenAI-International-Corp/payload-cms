@@ -9,10 +9,10 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import { Categories, CategoriesCacheStrategy } from './collections/Categories'
-import { Products, ProductsCacheStrategy } from './collections/Products'
+import { Categories } from './collections/Categories'
+import { Products } from './collections/Products'
 import { seedCategories } from './seed/categories'
-import { registerCollectionCacheStrategy } from './payload/utils/cloudflareCache'
+import { registerAllCacheStrategies } from './payload/config/cacheStrategies'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -52,9 +52,8 @@ export default buildConfig({
     }),
   ],
   onInit: async (payload) => {
-    // 注册集合的缓存策略
-    registerCollectionCacheStrategy('products', ProductsCacheStrategy)
-    registerCollectionCacheStrategy('categories', CategoriesCacheStrategy)
+    // 注册所有集合的缓存清除策略
+    registerAllCacheStrategies()
     
     // Seed default categories on initialization
     // Only runs if no categories exist yet
