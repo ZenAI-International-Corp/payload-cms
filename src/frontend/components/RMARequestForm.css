@@ -1,0 +1,295 @@
+.rma-form {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 32px;
+  border-radius: 4px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.form-error {
+  background-color: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+  padding: 16px 20px;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.form-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #111827;
+  margin: 0 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #2457AA;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+/* 提示信息容器 - 放在 label 和输入框之间 */
+.form-hint {
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6B7280;
+  font-style: italic;
+}
+
+/* 如果输入框有提示信息，调整 label 的 margin */
+.form-group:has(.form-hint) label,
+.form-group:has(.file-hint) label {
+  margin-bottom: 2px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.form-group .required {
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='tel'],
+.form-group input[type='date'],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: inherit;
+  color: #111827;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
+.form-group input[type='tel']:focus,
+.form-group input[type='date']:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2457AA;
+  box-shadow: 0 0 0 3px rgba(36, 87, 170, 0.1);
+}
+
+.form-group input[type='file'] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px dashed #D1D5DB;
+  border-radius: 4px;
+  background-color: #F9FAFB;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  padding: 8px 12px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 14px;
+  color: #111827;
+  height: 20px;
+}
+
+.radio-label input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  accent-color: #2457AA;
+  flex-shrink: 0;
+}
+
+.radio-label span {
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.file-hint {
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6B7280;
+  font-style: italic;
+}
+
+.file-list {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+}
+
+.file-list p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #111827;
+}
+
+.file-list ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.file-list li {
+  margin-bottom: 4px;
+  color: #4B5563;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.file-list .file-error {
+  color: #DC2626;
+  font-weight: 500;
+}
+
+.form-actions {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.btn {
+  display: inline-block;
+  padding: 17px 35px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+  background: #2457AA;
+  color: white;
+  box-shadow: 0px 4px 6px -4px rgba(0, 0, 0, 0.10);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1e4690;
+}
+
+.btn-primary:disabled {
+  background-color: #9CA3AF;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 1024px) {
+  .rma-form {
+    padding: 24px;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    line-height: 24px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rma-form {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .form-actions {
+    margin-top: 24px;
+  }
+
+  .btn {
+    padding: 14px 28px;
+    font-size: 14px;
+    width: 100%;
+  }
+}
+

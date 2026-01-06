@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     categories: Category;
     products: Product;
+    'rma-requests': RmaRequest;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +83,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'rma-requests': RmaRequestsSelect<false> | RmaRequestsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -359,6 +361,65 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * RMA (Return Merchandise Authorization) and Technical Support requests submitted by customers
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rma-requests".
+ */
+export interface RmaRequest {
+  id: number;
+  firstName: string;
+  lastName: string;
+  /**
+   * Customer email address for communication
+   */
+  email: string;
+  requestType: 'rma' | 'tech-support';
+  onSite: 'yes' | 'no';
+  phoneNumber: string;
+  companyName?: string | null;
+  address: {
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state: string;
+    zipCode: string;
+  };
+  invoiceDate?: string | null;
+  invoiceNumber?: string | null;
+  serialNumber: string;
+  model?: string | null;
+  /**
+   * If not applicable, please write n/a
+   */
+  deviceLoginUsername: string;
+  distributor?: string | null;
+  subject: string;
+  /**
+   * Upload supporting documents, images, or files related to the RMA request
+   */
+  attachments?:
+    | {
+        file: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Please describe the problem in detail
+   */
+  problem: string;
+  /**
+   * Current status of the RMA request
+   */
+  status?: ('new' | 'in-progress' | 'resolved' | 'closed') | null;
+  /**
+   * Internal notes for admin use only
+   */
+  adminNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -397,6 +458,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'rma-requests';
+        value: number | RmaRequest;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -537,6 +602,46 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rma-requests_select".
+ */
+export interface RmaRequestsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  email?: T;
+  requestType?: T;
+  onSite?: T;
+  phoneNumber?: T;
+  companyName?: T;
+  address?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        zipCode?: T;
+      };
+  invoiceDate?: T;
+  invoiceNumber?: T;
+  serialNumber?: T;
+  model?: T;
+  deviceLoginUsername?: T;
+  distributor?: T;
+  subject?: T;
+  attachments?:
+    | T
+    | {
+        file?: T;
+        id?: T;
+      };
+  problem?: T;
+  status?: T;
+  adminNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

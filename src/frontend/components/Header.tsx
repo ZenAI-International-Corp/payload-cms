@@ -18,7 +18,7 @@ export function Header() {
     { label: 'Project Registration', href: '/project-registration', hasDropdown: false },
     { label: 'Cybersecurity', href: '/cybersecurity', hasDropdown: false },
     { label: 'About Us', href: '/about-us', hasDropdown: false },
-    { label: 'Support', href: '/support', hasDropdown: false },
+    { label: 'Support', href: '/rma-request', hasDropdown: false },
   ]
 
   const clearCloseTimeout = useCallback(() => {

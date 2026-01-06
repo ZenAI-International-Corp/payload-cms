@@ -1,0 +1,98 @@
+.rma-request-page {
+  padding: 48px 0 64px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.rma-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.rma-title {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 40px;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+.rma-description {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #4B5563;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.required-asterisk {
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.rma-notice {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background-color: #FEF3C7;
+  border: 1px solid #FCD34D;
+  border-left: 4px solid #F59E0B;
+  border-radius: 4px;
+}
+
+.rma-notice h3 {
+  margin: 0 0 12px 0;
+  color: #92400E;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.rma-notice ul {
+  margin: 0;
+  padding-left: 24px;
+  color: #92400E;
+}
+
+.rma-notice li {
+  margin-bottom: 8px;
+  line-height: 24px;
+  font-size: 16px;
+}
+
+@media (max-width: 1024px) {
+  .rma-request-page {
+    padding: 32px 0 48px;
+  }
+
+  .rma-title {
+    font-size: 32px;
+    line-height: 36px;
+  }
+
+  .rma-description {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rma-header {
+    margin-bottom: 24px;
+  }
+
+  .rma-title {
+    font-size: 28px;
+    line-height: 32px;
+  }
+
+  .rma-description {
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .rma-notice {
+    margin-top: 24px;
+    padding: 16px 20px;
+  }
+}
+

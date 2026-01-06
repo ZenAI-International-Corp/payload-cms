@@ -24,6 +24,8 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_dd69863933972e88776c2c9b0e2f1de8 } from '../../../payload/components/BulkImageUploadField'
+import { StatusCell as StatusCell_616382b01f5760c5e64965d655a4ec2c } from '../../../payload/components/StatusCell'
+import { RMARequestPreview as RMARequestPreview_03b1e25e538dbc6663eeb5f3f56725ba } from '../../../payload/components/RMARequestPreview'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -53,5 +55,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/payload/components/BulkImageUploadField#default": default_dd69863933972e88776c2c9b0e2f1de8,
+  "/payload/components/StatusCell#StatusCell": StatusCell_616382b01f5760c5e64965d655a4ec2c,
+  "/payload/components/RMARequestPreview#RMARequestPreview": RMARequestPreview_03b1e25e538dbc6663eeb5f3f56725ba,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }
