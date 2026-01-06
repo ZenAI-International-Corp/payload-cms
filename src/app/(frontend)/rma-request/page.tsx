@@ -25,7 +25,7 @@ export default function RMARequestPage() {
           <h3>Important Notice:</h3>
           <ul>
             <li>
-              If we receive the product and find that there are no problems, regardless of if it's under warranty
+              If we receive the product and find that there are no problems, regardless of if it&apos;s under warranty
               there will be a diagnostic fee charge.
             </li>
             <li>
