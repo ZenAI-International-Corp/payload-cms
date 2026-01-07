@@ -134,12 +134,19 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const relations = await getAllRelatedProducts(payload, product.id, true)
   
   const relatedProducts = {
+    // Direct relations (outgoing)
     accessories: relations.directRelations.filter(r => r.relationType === 'accessory'),
     compatible: relations.directRelations.filter(r => r.relationType === 'compatible'),
     alternatives: relations.directRelations.filter(r => r.relationType === 'alternative'),
     upgrades: relations.directRelations.filter(r => r.relationType === 'upgrade'),
     related: relations.directRelations.filter(r => r.relationType === 'related'),
-    mainProducts: relations.reverseRelations.filter(r => r.relationType === 'accessory'),
+    
+    // Reverse relations (incoming) - grouped by type
+    reverseAccessories: relations.reverseRelations.filter(r => r.relationType === 'accessory'),
+    reverseCompatible: relations.reverseRelations.filter(r => r.relationType === 'compatible'),
+    reverseAlternatives: relations.reverseRelations.filter(r => r.relationType === 'alternative'),
+    reverseUpgrades: relations.reverseRelations.filter(r => r.relationType === 'upgrade'),
+    reverseRelated: relations.reverseRelations.filter(r => r.relationType === 'related'),
   }
 
   return (

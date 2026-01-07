@@ -20,12 +20,18 @@ interface ProductDetailProps {
   galleryImages: { url: string; alt: string }[]
   description: string | null
   relatedProducts?: {
+    // Direct relations (outgoing)
     accessories: RelatedProductData[]
     compatible: RelatedProductData[]
     alternatives: RelatedProductData[]
     upgrades: RelatedProductData[]
     related: RelatedProductData[]
-    mainProducts: RelatedProductData[]
+    // Reverse relations (incoming)
+    reverseAccessories: RelatedProductData[]
+    reverseCompatible: RelatedProductData[]
+    reverseAlternatives: RelatedProductData[]
+    reverseUpgrades: RelatedProductData[]
+    reverseRelated: RelatedProductData[]
   }
 }
 
@@ -46,12 +52,18 @@ export function ProductDetail({
 
   // Check if there are any related products
   const hasRelatedProducts = relatedProducts && (
+    // Direct relations
     (relatedProducts.accessories?.length || 0) > 0 ||
     (relatedProducts.compatible?.length || 0) > 0 ||
     (relatedProducts.alternatives?.length || 0) > 0 ||
     (relatedProducts.upgrades?.length || 0) > 0 ||
     (relatedProducts.related?.length || 0) > 0 ||
-    (relatedProducts.mainProducts?.length || 0) > 0
+    // Reverse relations
+    (relatedProducts.reverseAccessories?.length || 0) > 0 ||
+    (relatedProducts.reverseCompatible?.length || 0) > 0 ||
+    (relatedProducts.reverseAlternatives?.length || 0) > 0 ||
+    (relatedProducts.reverseUpgrades?.length || 0) > 0 ||
+    (relatedProducts.reverseRelated?.length || 0) > 0
   )
 
   // Render HTML content
@@ -296,15 +308,17 @@ export function ProductDetail({
                     </div>
                   )}
 
-                  {/* Main Products (Compatible With - Reverse Relation) */}
-                  {relatedProducts.mainProducts && relatedProducts.mainProducts.length > 0 && (
+                  {/* Reverse Relations - Products that reference this product */}
+                  
+                  {/* Reverse: Accessory (Products that list this as accessory) */}
+                  {relatedProducts.reverseAccessories && relatedProducts.reverseAccessories.length > 0 && (
                     <div className="product-detail-related-section">
                       <h3 className="product-detail-related-title">Compatible With</h3>
                       <p className="product-detail-related-subtitle">
                         This accessory is compatible with the following products:
                       </p>
                       <div className="product-detail-related-grid">
-                        {relatedProducts.mainProducts.map((relation, index) => {
+                        {relatedProducts.reverseAccessories.map((relation, index) => {
                           const relProduct = relation.product
                           const featuredImage = relProduct.gallery?.[0]
                           const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
@@ -313,7 +327,183 @@ export function ProductDetail({
 
                           return (
                             <Link
-                              key={`main-${index}`}
+                              key={`rev-accessory-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reverse: Compatible */}
+                  {relatedProducts.reverseCompatible && relatedProducts.reverseCompatible.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Works With</h3>
+                      <p className="product-detail-related-subtitle">
+                        Products that are compatible with this product:
+                      </p>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.reverseCompatible.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`rev-compatible-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reverse: Alternative */}
+                  {relatedProducts.reverseAlternatives && relatedProducts.reverseAlternatives.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Alternative To</h3>
+                      <p className="product-detail-related-subtitle">
+                        This product is an alternative to:
+                      </p>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.reverseAlternatives.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`rev-alternative-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reverse: Upgrade */}
+                  {relatedProducts.reverseUpgrades && relatedProducts.reverseUpgrades.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Upgrade From</h3>
+                      <p className="product-detail-related-subtitle">
+                        This product is an upgrade from:
+                      </p>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.reverseUpgrades.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`rev-upgrade-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reverse: Related (General) */}
+                  {relatedProducts.reverseRelated && relatedProducts.reverseRelated.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Also Related To</h3>
+                      <p className="product-detail-related-subtitle">
+                        Products that are related to this product:
+                      </p>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.reverseRelated.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`rev-related-${index}`}
                               href={`/products/${relProduct.slug}`}
                               className="product-detail-related-card"
                             >
