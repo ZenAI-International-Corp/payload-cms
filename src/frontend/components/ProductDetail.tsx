@@ -5,13 +5,27 @@ import Link from 'next/link'
 import type { Product, Category } from '@/payload-types'
 import './ProductDetail.css'
 
-type TabType = 'specification' | 'downloads'
+type TabType = 'specification' | 'downloads' | 'related'
+
+interface RelatedProductData {
+  product: Product
+  relationType: string
+  note?: string
+  direction: 'outgoing' | 'incoming'
+}
 
 interface ProductDetailProps {
   product: Product
   allCategories: Category[]
   galleryImages: { url: string; alt: string }[]
   description: string | null
+  relatedProducts?: {
+    accessories: RelatedProductData[]
+    compatible: RelatedProductData[]
+    alternatives: RelatedProductData[]
+    upgrades: RelatedProductData[]
+    mainProducts: RelatedProductData[]
+  }
 }
 
 export function ProductDetail({
@@ -19,6 +33,7 @@ export function ProductDetail({
   allCategories,
   galleryImages,
   description,
+  relatedProducts,
 }: ProductDetailProps) {
   const [activeTab, setActiveTab] = useState<TabType>('specification')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
@@ -27,6 +42,15 @@ export function ProductDetail({
 
   const mainCategoryId =
     typeof product.mainCategory === 'object' ? product.mainCategory?.id : product.mainCategory
+
+  // Check if there are any related products
+  const hasRelatedProducts = relatedProducts && (
+    (relatedProducts.accessories?.length || 0) > 0 ||
+    (relatedProducts.compatible?.length || 0) > 0 ||
+    (relatedProducts.alternatives?.length || 0) > 0 ||
+    (relatedProducts.upgrades?.length || 0) > 0 ||
+    (relatedProducts.mainProducts?.length || 0) > 0
+  )
 
   // Render HTML content
   const renderHTML = (html: string | null | undefined) => {
@@ -126,6 +150,14 @@ export function ProductDetail({
           >
             Downloads
           </button>
+          {hasRelatedProducts && (
+            <button
+              className={`product-detail-tab ${activeTab === 'related' ? 'active' : ''}`}
+              onClick={() => setActiveTab('related')}
+            >
+              Related Products
+            </button>
+          )}
         </div>
 
         {/* Tab Content */}
@@ -172,6 +204,224 @@ export function ProductDetail({
                 </div>
               ) : (
                 <p className="product-detail-empty">No downloads available.</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'related' && (
+            <div className="product-detail-tab-content">
+              {relatedProducts ? (
+                <div className="product-detail-related">
+                  {/* Accessories */}
+                  {relatedProducts.accessories && relatedProducts.accessories.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Recommended Accessories</h3>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.accessories.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`accessory-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Compatible Products */}
+                  {relatedProducts.compatible && relatedProducts.compatible.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Compatible Products</h3>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.compatible.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`compatible-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Main Products (Compatible With - Reverse Relation) */}
+                  {relatedProducts.mainProducts && relatedProducts.mainProducts.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Compatible With</h3>
+                      <p className="product-detail-related-subtitle">
+                        This accessory is compatible with the following products:
+                      </p>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.mainProducts.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`main-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Alternatives */}
+                  {relatedProducts.alternatives && relatedProducts.alternatives.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Alternative Products</h3>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.alternatives.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`alternative-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upgrades */}
+                  {relatedProducts.upgrades && relatedProducts.upgrades.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Upgrade Options</h3>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.upgrades.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`upgrade-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="product-detail-empty">No related products available.</p>
               )}
             </div>
           )}

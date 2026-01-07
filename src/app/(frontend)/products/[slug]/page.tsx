@@ -4,6 +4,7 @@ import config from '@payload-config'
 import type { Category } from '@/payload-types'
 import { ProductDetail } from '@/frontend/components'
 import { notFound } from 'next/navigation'
+import { getAllRelatedProducts } from '@/payload/utils/productRelations'
 
 // 动态渲染配置
 // 在 Cloudflare Workers 中，缓存由 middleware.ts 的 Cache-Control 头控制
@@ -129,12 +130,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? String(product.description)
         : null
 
+  // Get related products
+  const relations = await getAllRelatedProducts(payload, product.id, true)
+  
+  const relatedProducts = {
+    accessories: relations.directRelations.filter(r => r.relationType === 'accessory'),
+    compatible: relations.directRelations.filter(r => r.relationType === 'compatible'),
+    alternatives: relations.directRelations.filter(r => r.relationType === 'alternative'),
+    upgrades: relations.directRelations.filter(r => r.relationType === 'upgrade'),
+    mainProducts: relations.reverseRelations.filter(r => r.relationType === 'accessory'),
+  }
+
   return (
     <ProductDetail
       product={product}
       allCategories={sortedCategories}
       galleryImages={galleryImages}
       description={description}
+      relatedProducts={relatedProducts}
     />
   )
 }

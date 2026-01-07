@@ -286,6 +286,26 @@ export interface Product {
    */
   categories?: (number | Category)[] | null;
   /**
+   * Add related products (e.g., accessories for main products, or main products for accessories)
+   */
+  relatedProducts?:
+    | {
+        /**
+         * Select a related product
+         */
+        product: number | Product;
+        /**
+         * Specify the type of relationship
+         */
+        relationType: 'accessory' | 'compatible' | 'alternative' | 'upgrade' | 'related';
+        /**
+         * Optional note about this relationship (e.g., "Recommended for outdoor installation")
+         */
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Additional product details and information
    */
   details?: {
@@ -582,6 +602,14 @@ export interface ProductsSelect<T extends boolean = true> {
         sizes?: T;
       };
   categories?: T;
+  relatedProducts?:
+    | T
+    | {
+        product?: T;
+        relationType?: T;
+        note?: T;
+        id?: T;
+      };
   details?: T;
   details_html?: T;
   specification?: T;

@@ -341,6 +341,74 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'relatedProducts',
+      type: 'array',
+      label: 'Related Products',
+      admin: {
+        description: 'Add related products (e.g., accessories for main products, or main products for accessories)',
+      },
+      validate: (value, { data }) => {
+        // Additional validation: ensure no product relates to itself
+        const currentProductId = (data as any)?.id
+        
+        if (value && Array.isArray(value) && currentProductId) {
+          const selfReference = value.find((rel: any) => {
+            const productId = typeof rel.product === 'object' ? rel.product?.id : rel.product
+            return productId === currentProductId
+          })
+          
+          if (selfReference) {
+            return 'A product cannot be related to itself'
+          }
+        }
+        return true
+      },
+      fields: [
+        {
+          name: 'product',
+          type: 'relationship',
+          relationTo: 'products',
+          required: true,
+          admin: {
+            description: 'Select a related product',
+          },
+          filterOptions: ({ id }) => {
+            // Exclude the current product from the selection list
+            if (id) {
+              return {
+                id: { not_equals: id },
+              }
+            }
+            // During creation, show all products
+            return true
+          },
+        },
+        {
+          name: 'relationType',
+          type: 'select',
+          options: [
+            { label: 'Accessory', value: 'accessory' },
+            { label: 'Compatible Product', value: 'compatible' },
+            { label: 'Alternative', value: 'alternative' },
+            { label: 'Upgrade', value: 'upgrade' },
+            { label: 'Related', value: 'related' },
+          ],
+          defaultValue: 'related',
+          required: true,
+          admin: {
+            description: 'Specify the type of relationship',
+          },
+        },
+        {
+          name: 'note',
+          type: 'textarea',
+          admin: {
+            description: 'Optional note about this relationship (e.g., "Recommended for outdoor installation")',
+          },
+        },
+      ],
+    },
+    {
       name: 'details',
       type: 'richText',
       label: 'Product Details',
