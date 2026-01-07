@@ -505,7 +505,7 @@ export const Products: CollectionConfig = {
   ],
   hooks: {
     beforeValidate: [
-      async ({ data, operation, req }) => {
+      async ({ data, operation, req, originalDoc }) => {
         if (data && (operation === 'create' || operation === 'update')) {
           // Sanitize slug function - removes URL-unsafe characters
           const sanitizeSlug = (text: string): string => {
@@ -544,7 +544,7 @@ export const Products: CollectionConfig = {
               // Check if the found document is the current one (for updates)
               const isCurrentDoc = operation === 'update' && 
                 existing.docs.length > 0 && 
-                existing.docs[0].id === req.data?.id
+                existing.docs[0].id === originalDoc?.id
 
               if (existing.totalDocs === 0 || isCurrentDoc) {
                 exists = false
