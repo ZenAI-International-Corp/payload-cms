@@ -24,6 +24,7 @@ interface ProductDetailProps {
     compatible: RelatedProductData[]
     alternatives: RelatedProductData[]
     upgrades: RelatedProductData[]
+    related: RelatedProductData[]
     mainProducts: RelatedProductData[]
   }
 }
@@ -49,6 +50,7 @@ export function ProductDetail({
     (relatedProducts.compatible?.length || 0) > 0 ||
     (relatedProducts.alternatives?.length || 0) > 0 ||
     (relatedProducts.upgrades?.length || 0) > 0 ||
+    (relatedProducts.related?.length || 0) > 0 ||
     (relatedProducts.mainProducts?.length || 0) > 0
   )
 
@@ -394,6 +396,47 @@ export function ProductDetail({
                           return (
                             <Link
                               key={`upgrade-${index}`}
+                              href={`/products/${relProduct.slug}`}
+                              className="product-detail-related-card"
+                            >
+                              {imageUrl && (
+                                <div className="product-detail-related-image">
+                                  <img src={imageUrl} alt={relProduct.model || 'Product'} />
+                                </div>
+                              )}
+                              <div className="product-detail-related-info">
+                                <h4>{relProduct.model}</h4>
+                                {relProduct.description && (
+                                  <p className="product-detail-related-description">
+                                    {relProduct.description}
+                                  </p>
+                                )}
+                                {relation.note && (
+                                  <p className="product-detail-related-note">{relation.note}</p>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Related Products (General) */}
+                  {relatedProducts.related && relatedProducts.related.length > 0 && (
+                    <div className="product-detail-related-section">
+                      <h3 className="product-detail-related-title">Related Products</h3>
+                      <div className="product-detail-related-grid">
+                        {relatedProducts.related.map((relation, index) => {
+                          const relProduct = relation.product
+                          const featuredImage = relProduct.gallery?.[0]
+                          const imageUrl = featuredImage && typeof featuredImage.image === 'object' 
+                            ? featuredImage.image.url 
+                            : null
+
+                          return (
+                            <Link
+                              key={`related-${index}`}
                               href={`/products/${relProduct.slug}`}
                               className="product-detail-related-card"
                             >

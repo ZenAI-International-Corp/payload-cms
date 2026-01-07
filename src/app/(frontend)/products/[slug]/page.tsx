@@ -138,6 +138,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     compatible: relations.directRelations.filter(r => r.relationType === 'compatible'),
     alternatives: relations.directRelations.filter(r => r.relationType === 'alternative'),
     upgrades: relations.directRelations.filter(r => r.relationType === 'upgrade'),
+    related: relations.directRelations.filter(r => r.relationType === 'related'),
     mainProducts: relations.reverseRelations.filter(r => r.relationType === 'accessory'),
   }
 
