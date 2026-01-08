@@ -72,6 +72,7 @@ export interface Config {
     categories: Category;
     products: Product;
     'rma-requests': RmaRequest;
+    carousels: Carousel;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'rma-requests': RmaRequestsSelect<false> | RmaRequestsSelect<true>;
+    carousels: CarouselsSelect<false> | CarouselsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -440,6 +442,49 @@ export interface RmaRequest {
   createdAt: string;
 }
 /**
+ * Manage homepage carousel slides
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carousels".
+ */
+export interface Carousel {
+  id: number;
+  /**
+   * Internal title for identification (not displayed on frontend)
+   */
+  title: string;
+  /**
+   * Carousel slide image
+   */
+  image: number | Media;
+  /**
+   * Alternative text for SEO and accessibility
+   */
+  altText?: string | null;
+  /**
+   * Enable click to configure link behavior
+   */
+  isClickable?: boolean | null;
+  /**
+   * URL to navigate when clicked
+   */
+  linkUrl?: string | null;
+  /**
+   * How to open the link
+   */
+  linkTarget?: ('_self' | '_blank') | null;
+  /**
+   * Lower numbers appear first
+   */
+  order?: number | null;
+  /**
+   * Only active slides will be displayed on homepage
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -482,6 +527,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'rma-requests';
         value: number | RmaRequest;
+      } | null)
+    | ({
+        relationTo: 'carousels';
+        value: number | Carousel;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -670,6 +719,22 @@ export interface RmaRequestsSelect<T extends boolean = true> {
   problem?: T;
   status?: T;
   adminNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carousels_select".
+ */
+export interface CarouselsSelect<T extends boolean = true> {
+  title?: T;
+  image?: T;
+  altText?: T;
+  isClickable?: T;
+  linkUrl?: T;
+  linkTarget?: T;
+  order?: T;
+  isActive?: T;
   updatedAt?: T;
   createdAt?: T;
 }

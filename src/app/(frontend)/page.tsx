@@ -15,7 +15,9 @@ import {
   Facebook,
   Send,
 } from 'lucide-react'
-import { CategoryGrid, FeaturedProducts } from '@/frontend/components'
+import { CategoryGrid, FeaturedProducts, Carousel } from '@/frontend/components'
+import type { CarouselSlide } from '@/frontend/components'
+import type { Media } from '@/payload-types'
 import './home.css'
 
 // 动态渲染配置 - 在运行时生成，不在构建时预渲染
@@ -31,6 +33,28 @@ export const metadata = {
 export default async function HomePage() {
   const payload = await getPayload({ config })
 
+  // 获取轮播图数据
+  const carouselsResult = await payload.find({
+    collection: 'carousels',
+    where: {
+      isActive: { equals: true },
+    },
+    sort: 'order',
+    depth: 1,
+  })
+
+  // 转换轮播图数据格式
+  const carouselSlides: CarouselSlide[] = carouselsResult.docs.map((doc) => ({
+    id: String(doc.id),
+    title: doc.title,
+    image: doc.image as Media,
+    altText: doc.altText,
+    isClickable: doc.isClickable,
+    linkUrl: doc.linkUrl,
+    linkTarget: doc.linkTarget as '_self' | '_blank' | null,
+    order: doc.order,
+  }))
+
   // 只需预加载特色产品，分类数据从 Context 获取
   const productsResult = await payload.find({
     collection: 'products',
@@ -43,8 +67,12 @@ export default async function HomePage() {
   })
   return (
     <div className="home-page">
-      {/* Hero Section */}
-      <section className="hero-section">
+      {/* Carousel Section - 轮播图 */}
+      {carouselSlides.length > 0 ? (
+        <Carousel slides={carouselSlides} />
+      ) : (
+        /* Hero Section - 如果没有轮播图则显示默认 Hero */
+        <section className="hero-section">
         <div className="hero-overlay"></div>
         <div className="hero-background-image"></div>
         <div className="hero-content">
@@ -70,7 +98,8 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* Core Product Categories */}
       <CategoryGrid />

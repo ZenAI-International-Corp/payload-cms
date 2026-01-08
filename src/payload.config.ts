@@ -12,6 +12,7 @@ import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
 import { Products } from './collections/Products'
 import { RMARequests } from './collections/RMARequests'
+import { Carousels } from './collections/Carousels'
 import { seedCategories } from './seed/categories'
 import { registerAllCacheStrategies } from './payload/config/cacheStrategies'
 
@@ -33,7 +34,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Products, RMARequests],
+  collections: [Users, Media, Categories, Products, RMARequests, Carousels],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,

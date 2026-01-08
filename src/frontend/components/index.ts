@@ -7,4 +7,6 @@ export { ProductDetail } from './ProductDetail'
 export { CategoryGrid } from './CategoryGrid'
 export { FeaturedProducts } from './FeaturedProducts'
 export { RMARequestForm } from './RMARequestForm'
+export { Carousel } from './Carousel'
+export type { CarouselSlide } from './Carousel'
 
